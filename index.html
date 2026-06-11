@@ -143,7 +143,7 @@ html,body{ width:100%; height:100%; background:#09090f; color:#fff; font-family:
       <circle id="ring-fill" cx="103" cy="103" r="97"/>
     </svg>
     <div id="tap-btn-text">TAP</div>
-    <div id="tap-btn-sub">눌러서 시작 · 떼서 정지</div>
+    <div id="tap-btn-sub">터치해서 시작!</div>
   </button>
 
   <div id="result-wrap">
@@ -174,10 +174,10 @@ html,body{ width:100%; height:100%; background:#09090f; color:#fff; font-family:
 
 <div id="overlay">
   <div class="ov-title">1초를 눌러라!</div>
-  <div class="ov-sub">정확히 1.000초에 손을 떼세요<br>오차가 적을수록 높은 점수!</div>
+  <div class="ov-sub">1초라고 느껴질 때 다시 탭하세요!<br>오차가 적을수록 높은 점수!</div>
   <div class="ov-steps">
-    <div class="ov-step"><span class="ov-step-num">1</span><span class="ov-step-txt">버튼을 꾹 누르면 타이머 시작</span></div>
-    <div class="ov-step"><span class="ov-step-num">2</span><span class="ov-step-txt">1.000초라고 느껴질 때 손을 떼세요</span></div>
+    <div class="ov-step"><span class="ov-step-num">1</span><span class="ov-step-txt">버튼을 탭하면 타이머 시작</span></div>
+    <div class="ov-step"><span class="ov-step-num">2</span><span class="ov-step-txt">1.000초라고 느껴질 때 다시 탭!</span></div>
     <div class="ov-step"><span class="ov-step-num">3</span><span class="ov-step-txt">오차가 적을수록 높은 등급!</span></div>
   </div>
   <button id="start-btn">시작하기</button>
@@ -208,6 +208,7 @@ var DAILIES = [
 // ── 상태 ──
 var TARGET = 1.000; // 목표 시간 (초)
 var pressing = false, startTime = 0, rafId = 0;
+var tapState = 'idle'; // 'idle' | 'running'
 var gameActive = false;
 var lastResult = null;
 
@@ -487,29 +488,28 @@ function timerLoop() {
 
 function startTimer() {
   pressing = true;
+  tapState = 'running';
   startTime = performance.now();
   counterEl.className = 'running';
   tapBtn.className = 'running-state';
   tapBtn.classList.add('active');
   setTimeout(function(){ tapBtn.classList.remove('active'); }, 80);
   ringFill.style.strokeDashoffset = CIRC;
-  // 결과 숨기기
   resultTime.style.opacity = '0';
   resultDiff.style.opacity = '0';
   resultGrade.style.opacity = '0';
   shareBtn.style.display = 'none';
   document.getElementById('tap-btn-text').textContent = '✋';
-  document.getElementById('tap-btn-sub').textContent = '1초라고 느껴질 때 떼세요!';
+  document.getElementById('tap-btn-sub').textContent = '지금 다시 탭하세요!';
   playStart();
-  startTension();
   rafId = requestAnimationFrame(timerLoop);
 }
 
 function stopTimer() {
-  if (!pressing) return;
+  if (tapState !== 'running') return;
   pressing = false;
+  tapState = 'idle';
   cancelAnimationFrame(rafId);
-  stopTension();
   stopTension();
 
   var elapsed = (performance.now() - startTime) / 1000;
@@ -542,7 +542,7 @@ function stopTimer() {
   // 버튼 복원
   tapBtn.className = 'ready-state';
   document.getElementById('tap-btn-text').textContent = 'TAP';
-  document.getElementById('tap-btn-sub').textContent = '다시 눌러보세요!';
+  document.getElementById('tap-btn-sub').textContent = '터치해서 시작!';
   counterEl.className = 'ready';
 
   // 통계 업데이트
@@ -658,32 +658,25 @@ function showToast(msg) {
 // ── 이벤트 ──
 function addEL(el, ev, fn, opts) { if(el) el.addEventListener(ev, fn, opts||false); }
 
-// 탭 버튼 - iOS Safari: passive:false 필수, AudioContext resume 보장
-addEL(tapBtn, 'touchstart', function(e) {
-  e.preventDefault(); e.stopPropagation();
+// 탭 버튼 - touchstart 하나로 통일 (누르기/떼기 방식 제거)
+// 첫 탭: 타이머 시작 / 두 번째 탭: 타이머 정지
+function handleTap(e) {
+  if (e.preventDefault) e.preventDefault();
+  if (e.stopPropagation) e.stopPropagation();
   if (!gameActive) return;
-  // iOS: 유저 제스처에서 AudioContext 반드시 resume
-  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  // iOS AudioContext 깨우기
   if (!audioCtx) getAC();
-  if (!pressing) startTimer();
-}, {passive: false});
-addEL(tapBtn, 'touchend', function(e) {
-  e.preventDefault(); e.stopPropagation();
-  if (!gameActive) return;
-  if (pressing) stopTimer();
-}, {passive: false});
-addEL(tapBtn, 'touchcancel', function(e) {
-  e.preventDefault();
-  if (pressing) stopTimer();
-}, {passive: false});
-addEL(tapBtn, 'mousedown', function(e) {
-  e.preventDefault(); e.stopPropagation();
-  if (!gameActive) return;
-  if (!pressing) startTimer();
-}, false);
-addEL(window, 'mouseup', function() {
-  if (pressing) stopTimer();
-}, false);
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+
+  if (tapState === 'idle') {
+    startTimer();
+  } else if (tapState === 'running') {
+    stopTimer();
+  }
+}
+
+addEL(tapBtn, 'touchstart', handleTap, {passive: false});
+addEL(tapBtn, 'mousedown',  handleTap, false);
 
 // 공유 버튼
 var shareTouched = false;
