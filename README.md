@@ -2,7 +2,7 @@
 
 > 정확히 1.000초에 손을 떼세요. 오차가 적을수록 높은 점수!
 
-**▶ 지금 바로 플레이** → [https://mindweaver74.github.io/one-second](https://mindweaver74.github.io/One-second)
+**▶ 지금 바로 플레이** → [https://mindweaver74.github.io/One-second](https://mindweaver74.github.io/one-second)
 
 ---
 
