@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>1초를 눌러라!</title>
+<style>
+:root { --grad: linear-gradient(135deg,#f84,#f4a); }
+*{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; -webkit-user-select:none; user-select:none; }
+html,body{ width:100%; height:100%; background:#09090f; color:#fff; font-family:-apple-system,'Helvetica Neue',Arial,sans-serif; overflow:hidden; touch-action:none; }
+
+#wrap{ width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; padding-top:max(20px,env(safe-area-inset-top)); padding-bottom:max(20px,env(safe-area-inset-bottom)); }
+
+/* 상단 */
+#top-bar{ width:100%; max-width:380px; display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+.top-stat{ text-align:center; }
+.top-stat-label{ font-size:10px; color:rgba(255,255,255,0.35); letter-spacing:1px; }
+.top-stat-val{ font-size:18px; font-weight:700; }
+
+/* 메인 카운터 */
+#counter-wrap{ text-align:center; margin-bottom:8px; }
+#counter{ font-size:86px; font-weight:900; letter-spacing:-4px; line-height:1; font-variant-numeric:tabular-nums; transition:color .1s; }
+#counter.running{ color:#fff; text-shadow:0 0 40px rgba(255,255,255,0.3); }
+#counter.ready{ color:rgba(255,255,255,0.25); }
+#counter-sub{ font-size:13px; color:rgba(255,255,255,0.35); margin-top:6px; letter-spacing:1px; }
+
+/* 목표 표시 */
+#target-wrap{ text-align:center; margin-bottom:20px; }
+#target-label{ font-size:12px; color:rgba(255,255,255,0.4); }
+#target-val{ font-size:22px; font-weight:700; color:#f0c040; }
+
+/* 탭 버튼 */
+#tap-btn{
+  width:200px; height:200px; border-radius:50%;
+  border:none; cursor:pointer;
+  background:rgba(255,255,255,0.06);
+  border:3px solid rgba(255,255,255,0.12);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  transition:transform .06s, box-shadow .1s;
+  position:relative; overflow:visible;
+  -webkit-appearance:none; z-index:5;
+  margin-bottom:20px;
+  flex-shrink:0;
+}
+#tap-btn.ready-state{ border-color:rgba(255,255,255,0.2); box-shadow:0 0 0 rgba(255,255,255,0); }
+#tap-btn.running-state{ border-color:rgba(255,200,80,0.6); box-shadow:0 0 30px rgba(255,180,50,0.25); }
+#tap-btn.active{ transform:scale(0.93); }
+#tap-btn-text{ font-size:20px; font-weight:700; color:rgba(255,255,255,0.7); pointer-events:none; }
+#tap-btn-sub{ font-size:12px; color:rgba(255,255,255,0.35); margin-top:4px; pointer-events:none; }
+
+/* 진행 링 */
+#progress-ring{ position:absolute; top:-3px; left:-3px; width:206px; height:206px; pointer-events:none; }
+#ring-track{ fill:none; stroke:rgba(255,255,255,0.06); stroke-width:6; }
+#ring-fill{ fill:none; stroke-width:5; stroke-linecap:round;
+  stroke-dasharray:610; stroke-dashoffset:610;
+  transform:rotate(-90deg); transform-origin:103px 103px;
+  transition:stroke .2s; }
+
+/* 결과 표시 */
+#result-wrap{ text-align:center; min-height:80px; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+#result-time{ font-size:48px; font-weight:900; letter-spacing:-2px; opacity:0; transition:all .2s; }
+#result-diff{ font-size:16px; font-weight:600; margin-top:4px; opacity:0; transition:all .2s; }
+#result-grade{ font-size:14px; font-weight:700; padding:4px 14px; border-radius:20px; margin-top:8px; opacity:0; transition:all .2s; display:inline-block; }
+
+/* 통계 바 */
+#stats-bar{ width:100%; max-width:380px; display:flex; gap:8px; margin-top:14px; }
+.stat-card{ flex:1; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:10px 6px; text-align:center; }
+.stat-card-val{ font-size:18px; font-weight:700; }
+.stat-card-lbl{ font-size:10px; color:rgba(255,255,255,0.35); margin-top:2px; }
+
+/* 데일리 챌린지 */
+#daily-wrap{ width:100%; max-width:380px; margin-top:12px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:12px 16px; }
+#daily-top{ display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+#daily-title{ font-size:12px; font-weight:600; color:rgba(255,255,255,0.5); }
+#daily-status{ font-size:12px; font-weight:700; }
+#daily-desc{ font-size:14px; font-weight:600; margin-bottom:8px; }
+#daily-bar-bg{ height:5px; background:rgba(255,255,255,0.08); border-radius:3px; overflow:hidden; }
+#daily-bar{ height:100%; border-radius:3px; background:var(--grad); width:0%; transition:width .4s; }
+
+/* 공유 버튼 */
+#share-btn{ display:none; margin-top:14px; padding:12px 32px; border-radius:50px; border:none; font-size:15px; font-weight:700; cursor:pointer; background:var(--grad); color:#fff; -webkit-appearance:none; position:relative; z-index:10; }
+
+/* 오버레이 */
+#overlay{ position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(6,6,14,0.97); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:100; text-align:center; padding:24px; padding-top:max(24px,env(safe-area-inset-top)); padding-bottom:max(24px,env(safe-area-inset-bottom)); }
+
+
+
+
+
+
+
+
+/* 결과 토스트 */
+#toast{ position:fixed; bottom:max(30px,env(safe-area-inset-bottom)); left:50%; transform:translateX(-50%) translateY(100px); background:rgba(30,30,40,0.97); border:1px solid rgba(255,255,255,0.15); border-radius:16px; padding:12px 20px; font-size:13px; color:rgba(255,255,255,0.8); z-index:200; opacity:0; transition:all .3s; white-space:nowrap; }
+#toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* 피드백 애니 */
+@keyframes pop{ 0%{transform:scale(0.8);opacity:0} 60%{transform:scale(1.1)} 100%{transform:scale(1);opacity:1} }
+.pop-in{ animation:pop .3s ease-out forwards; }
+
+.ov-title{font-size:38px;font-weight:900;letter-spacing:-1px;background:linear-gradient(135deg,#ff6b35,#ff4081);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px;}
+.ov-sub{font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:28px;line-height:1.7;}
+.ov-steps{width:100%;max-width:280px;margin-bottom:32px;display:flex;flex-direction:column;gap:14px;}
+.ov-step{display:flex;align-items:center;gap:14px;}
+.ov-step-num{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#ff6b35,#ff4081);color:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ov-step-txt{font-size:14px;color:#ffffff;font-weight:500;}
+#start-btn{padding:16px 52px;border-radius:50px;border:none;font-size:17px;font-weight:700;cursor:pointer;background:linear-gradient(135deg,#ff6b35,#ff4081);color:#ffffff;-webkit-appearance:none;min-width:200px;position:relative;z-index:110;letter-spacing:0.5px;}
+</style>
+</head>
+<body>
+
+<div id="wrap">
+  <div id="top-bar">
+    <div class="top-stat">
+      <div class="top-stat-label">BEST</div>
+      <div class="top-stat-val" id="best-disp">—</div>
+    </div>
+    <div class="top-stat">
+      <div class="top-stat-label">TODAY</div>
+      <div class="top-stat-val" id="today-disp">0판</div>
+    </div>
+    <div class="top-stat">
+      <div class="top-stat-label">STREAK</div>
+      <div class="top-stat-val" id="streak-disp">🔥0</div>
+    </div>
+  </div>
+
+  <div id="counter-wrap">
+    <div id="counter" class="ready">0.000</div>
+    <div id="counter-sub">초</div>
+  </div>
+
+  <div id="target-wrap">
+    <div id="target-label">🎯 목표</div>
+    <div id="target-val">1.000초</div>
+  </div>
+
+  <button id="tap-btn">
+    <svg id="progress-ring" viewBox="0 0 206 206">
+      <circle id="ring-track" cx="103" cy="103" r="97"/>
+      <circle id="ring-fill" cx="103" cy="103" r="97"/>
+    </svg>
+    <div id="tap-btn-text">TAP</div>
+    <div id="tap-btn-sub">눌러서 시작 · 떼서 정지</div>
+  </button>
+
+  <div id="result-wrap">
+    <div id="result-time"></div>
+    <div id="result-diff"></div>
+    <div id="result-grade"></div>
+  </div>
+
+  <div id="stats-bar">
+    <div class="stat-card"><div class="stat-card-val" id="stat-avg">—</div><div class="stat-card-lbl">평균</div></div>
+    <div class="stat-card"><div class="stat-card-val" id="stat-tries">0</div><div class="stat-card-lbl">총 도전</div></div>
+    <div class="stat-card"><div class="stat-card-val" id="stat-perfect">0</div><div class="stat-card-lbl">신의 손</div></div>
+  </div>
+
+  <div id="daily-wrap">
+    <div id="daily-top">
+      <div id="daily-title">📅 오늘의 챌린지</div>
+      <div id="daily-status"></div>
+    </div>
+    <div id="daily-desc">로딩 중...</div>
+    <div id="daily-bar-bg"><div id="daily-bar"></div></div>
+  </div>
+
+  <button id="share-btn">📤 결과 공유하기</button>
+</div>
+
+<div id="toast"></div>
+
+<div id="overlay">
+  <div class="ov-title">1초를 눌러라!</div>
+  <div class="ov-sub">정확히 1.000초에 손을 떼세요<br>오차가 적을수록 높은 점수!</div>
+  <div class="ov-steps">
+    <div class="ov-step"><span class="ov-step-num">1</span><span class="ov-step-txt">버튼을 꾹 누르면 타이머 시작</span></div>
+    <div class="ov-step"><span class="ov-step-num">2</span><span class="ov-step-txt">1.000초라고 느껴질 때 손을 떼세요</span></div>
+    <div class="ov-step"><span class="ov-step-num">3</span><span class="ov-step-txt">오차가 적을수록 높은 등급!</span></div>
+  </div>
+  <button id="start-btn">시작하기</button>
+</div>
+
+<script>
+// ── 등급 ──
+var GRADES = [
+  { max:0.010, label:'🏆 신의 손',   color:'#fff',   bg:'rgba(255,255,255,0.15)', pts:1000 },
+  { max:0.030, label:'⚡ 달인',      color:'#ffd700', bg:'rgba(255,215,0,0.15)',   pts:800  },
+  { max:0.060, label:'🎯 고수',      color:'#4af',   bg:'rgba(80,180,255,0.15)',  pts:600  },
+  { max:0.100, label:'👍 보통',      color:'#0f9',   bg:'rgba(0,220,140,0.15)',   pts:400  },
+  { max:0.200, label:'😅 아쉽다',    color:'#fa4',   bg:'rgba(255,180,50,0.15)',  pts:200  },
+  { max:9999,  label:'😭 다시하자',  color:'#888',   bg:'rgba(150,150,150,0.1)',  pts:50   },
+];
+
+// ── 데일리 챌린지 ──
+var DAILIES = [
+  { desc:'신의 손(±0.010초) 1회 달성',  key:'perfect', goal:1  },
+  { desc:'달인(±0.030초) 3회 달성',      key:'master',  goal:3  },
+  { desc:'평균 오차 0.050초 이하',        key:'avg50',   goal:1  },
+  { desc:'10판 연속 도전',                key:'tries10', goal:10 },
+  { desc:'고수 이상 5회 달성',            key:'good5',   goal:5  },
+  { desc:'총 20판 도전',                  key:'tries20', goal:20 },
+  { desc:'신의 손 3회 달성',              key:'perfect3',goal:3  },
+];
+
+// ── 상태 ──
+var TARGET = 1.000; // 목표 시간 (초)
+var pressing = false, startTime = 0, rafId = 0;
+var gameActive = false;
+var lastResult = null;
+
+// 영구 통계
+var ST = {
+  bestDiff:    parseFloat(localStorage.getItem('osBestDiff') || '9999'),
+  totalTries:  parseInt(localStorage.getItem('osTries')    || '0'),
+  totalPerfect:parseInt(localStorage.getItem('osPerfect')  || '0'),
+  allDiffs:    JSON.parse(localStorage.getItem('osDiffs')  || '[]'),
+  dailyCleared:parseInt(localStorage.getItem('osDailyClr')|| '0'),
+};
+
+var todayKey = (function(){
+  var d = new Date();
+  return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+})();
+var dailySave = JSON.parse(localStorage.getItem('osDaily') || '{}');
+if (dailySave.date !== todayKey) {
+  var ci = Math.abs((function(s){
+    var h=0; for(var i=0;i<s.length;i++) h=(Math.imul(31,h)+s.charCodeAt(i))|0; return h;
+  })(todayKey)) % DAILIES.length;
+  dailySave = { date:todayKey, idx:ci, progress:0, cleared:false,
+    tries:0, perfect:0, master:0, good5:0, avg50done:false };
+  localStorage.setItem('osDaily', JSON.stringify(dailySave));
+}
+var todayChallenge = DAILIES[dailySave.idx];
+
+// 오늘 판수
+var todayTries = parseInt(localStorage.getItem('osTodayTries') || '0');
+var todayKey2  = localStorage.getItem('osTodayKey') || '';
+if (todayKey2 !== todayKey) {
+  todayTries = 0;
+  localStorage.setItem('osTodayKey', todayKey);
+  localStorage.setItem('osTodayTries', '0');
+}
+
+// 연속 도전 (오늘 n번 이상 하면 streak)
+var streak = parseInt(localStorage.getItem('osStreak') || '0');
+var lastPlayDate = localStorage.getItem('osLastPlay') || '';
+var yesterday = (function(){
+  var d = new Date(); d.setDate(d.getDate()-1);
+  return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+})();
+if (lastPlayDate !== todayKey && lastPlayDate !== yesterday) streak = 0;
+
+// ── DOM ──
+var counterEl    = document.getElementById('counter');
+var tapBtn       = document.getElementById('tap-btn');
+var ringFill     = document.getElementById('ring-fill');
+var resultTime   = document.getElementById('result-time');
+var resultDiff   = document.getElementById('result-diff');
+var resultGrade  = document.getElementById('result-grade');
+var shareBtn     = document.getElementById('share-btn');
+var overlay      = document.getElementById('overlay');
+var startBtn2    = document.getElementById('start-btn');
+
+var CIRC = 2 * Math.PI * 97; // ~610
+ringFill.style.strokeDasharray = CIRC;
+ringFill.style.strokeDashoffset = CIRC;
+
+function saveStats() {
+  localStorage.setItem('osBestDiff',  ST.bestDiff);
+  localStorage.setItem('osTries',     ST.totalTries);
+  localStorage.setItem('osPerfect',   ST.totalPerfect);
+  localStorage.setItem('osDiffs',     JSON.stringify(ST.allDiffs.slice(-100)));
+  localStorage.setItem('osDailyClr',  ST.dailyCleared);
+  localStorage.setItem('osDaily',     JSON.stringify(dailySave));
+  localStorage.setItem('osTodayTries',todayTries);
+  localStorage.setItem('osStreak',    streak);
+  localStorage.setItem('osLastPlay',  todayKey);
+}
+
+function updateHUD() {
+  document.getElementById('best-disp').textContent =
+    ST.bestDiff < 9999 ? ST.bestDiff.toFixed(3)+'s' : '—';
+  document.getElementById('today-disp').textContent = todayTries + '판';
+  document.getElementById('streak-disp').textContent = '🔥' + streak;
+  document.getElementById('stat-tries').textContent = ST.totalTries;
+  document.getElementById('stat-perfect').textContent = ST.totalPerfect;
+  if (ST.allDiffs.length > 0) {
+    var avg = ST.allDiffs.slice(-20).reduce(function(a,b){return a+b;},0) / Math.min(ST.allDiffs.length,20);
+    document.getElementById('stat-avg').textContent = avg.toFixed(3)+'s';
+  }
+}
+
+function renderDaily() {
+  var ch = todayChallenge;
+  document.getElementById('daily-desc').textContent = ch.desc;
+  var pct = 0, statusText = '';
+  if (dailySave.cleared) {
+    pct = 100;
+    statusText = '✅ 클리어!';
+    document.getElementById('daily-bar').style.background = '#0f9';
+  } else {
+    var prog = dailySave.progress || 0;
+    pct = Math.min(Math.round(prog / ch.goal * 100), 99);
+    statusText = prog + ' / ' + ch.goal;
+    document.getElementById('daily-bar').style.background = 'linear-gradient(135deg,#f84,#f4a)';
+  }
+  document.getElementById('daily-bar').style.width = pct + '%';
+  document.getElementById('daily-status').textContent = statusText;
+  document.getElementById('daily-status').style.color = dailySave.cleared ? '#0f9' : '#fa4';
+}
+
+// ── 오디오 ──
+var audioCtx = null;
+function getAC() {
+  if (!audioCtx) try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){}
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+function playStart() {
+  var ac = getAC(); if (!ac) return;
+  try {
+    var o = ac.createOscillator(), g = ac.createGain();
+    o.connect(g); g.connect(ac.destination);
+    var t = ac.currentTime;
+    o.type = 'sine';
+    o.frequency.setValueAtTime(440, t);
+    g.gain.setValueAtTime(0.15, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+    o.start(t); o.stop(t + 0.12);
+  } catch(e) {}
+}
+function playStop(grade) {
+  var ac = getAC(); if (!ac) return;
+  try {
+    var t = ac.currentTime;
+    var freqs = grade === 0 ? [880, 1108, 1320] :
+                grade === 1 ? [660, 880] :
+                grade <= 3  ? [528] : [330];
+    freqs.forEach(function(f, i) {
+      var o = ac.createOscillator(), g = ac.createGain();
+      o.connect(g); g.connect(ac.destination);
+      o.type = grade <= 1 ? 'sine' : 'triangle';
+      o.frequency.setValueAtTime(f, t + i * 0.06);
+      g.gain.setValueAtTime(0.18, t + i * 0.06);
+      g.gain.exponentialRampToValueAtTime(0.001, t + i * 0.06 + 0.3);
+      o.start(t + i * 0.06); o.stop(t + i * 0.06 + 0.32);
+    });
+  } catch(e) {}
+}
+
+// ── 타이머 루프 ──
+function timerLoop() {
+  if (!pressing) return;
+  var elapsed = (performance.now() - startTime) / 1000;
+  counterEl.textContent = Math.min(elapsed, 9.999).toFixed(3);
+
+  // 링 업데이트 (0~2초 기준)
+  var ratio = Math.min(elapsed / 2.0, 1);
+  ringFill.style.strokeDashoffset = CIRC * (1 - ratio);
+
+  // 색상: 0.8~1.2초 구간 강조
+  var proximity = 1 - Math.abs(elapsed - TARGET);
+  if (elapsed >= 0.9 && elapsed <= 1.1) {
+    var intensity = 1 - Math.abs(elapsed - TARGET) / 0.1;
+    ringFill.style.stroke = 'rgba(255,' + Math.round(200 + intensity*55) + ',50,' + (0.6 + intensity*0.4) + ')';
+    counterEl.style.color = elapsed >= 0.97 && elapsed <= 1.03 ? '#ffd700' : '#fff';
+  } else if (elapsed < 0.9) {
+    ringFill.style.stroke = 'rgba(80,160,255,0.7)';
+    counterEl.style.color = '#fff';
+  } else {
+    ringFill.style.stroke = 'rgba(255,80,80,0.8)';
+    counterEl.style.color = '#ff8080';
+  }
+
+  // 2초 넘으면 자동 종료
+  if (elapsed > 2.5) {
+    stopTimer();
+    return;
+  }
+
+  rafId = requestAnimationFrame(timerLoop);
+}
+
+function startTimer() {
+  pressing = true;
+  startTime = performance.now();
+  counterEl.className = 'running';
+  tapBtn.className = 'running-state';
+  tapBtn.classList.add('active');
+  setTimeout(function(){ tapBtn.classList.remove('active'); }, 80);
+  ringFill.style.strokeDashoffset = CIRC;
+  // 결과 숨기기
+  resultTime.style.opacity = '0';
+  resultDiff.style.opacity = '0';
+  resultGrade.style.opacity = '0';
+  shareBtn.style.display = 'none';
+  document.getElementById('tap-btn-text').textContent = '✋';
+  document.getElementById('tap-btn-sub').textContent = '1초라고 느껴질 때 떼세요!';
+  playStart();
+  rafId = requestAnimationFrame(timerLoop);
+}
+
+function stopTimer() {
+  if (!pressing) return;
+  pressing = false;
+  cancelAnimationFrame(rafId);
+
+  var elapsed = (performance.now() - startTime) / 1000;
+  var diff = Math.abs(elapsed - TARGET);
+
+  // 등급 결정
+  var gradeIdx = GRADES.length - 1;
+  for (var i = 0; i < GRADES.length; i++) {
+    if (diff <= GRADES[i].max) { gradeIdx = i; break; }
+  }
+  var grade = GRADES[gradeIdx];
+
+  // 결과 표시
+  counterEl.textContent = elapsed.toFixed(3);
+  counterEl.style.color = grade.color;
+
+  var sign = elapsed >= TARGET ? '+' : '-';
+  resultTime.textContent = elapsed.toFixed(3) + '초';
+  resultTime.style.color = grade.color;
+  resultDiff.textContent = '오차 ' + sign + diff.toFixed(3) + '초';
+  resultGrade.textContent = grade.label;
+  resultGrade.style.color = grade.color;
+  resultGrade.style.background = grade.bg;
+
+  resultTime.style.opacity = '1';
+  resultTime.classList.remove('pop-in'); void resultTime.offsetWidth; resultTime.classList.add('pop-in');
+  resultDiff.style.opacity = '1';
+  resultGrade.style.opacity = '1';
+
+  // 버튼 복원
+  tapBtn.className = 'ready-state';
+  document.getElementById('tap-btn-text').textContent = 'TAP';
+  document.getElementById('tap-btn-sub').textContent = '다시 눌러보세요!';
+  counterEl.className = 'ready';
+
+  // 통계 업데이트
+  ST.totalTries++;
+  todayTries++;
+  ST.allDiffs.push(diff);
+  if (gradeIdx === 0) ST.totalPerfect++;
+  if (diff < ST.bestDiff) ST.bestDiff = diff;
+
+  // 연속 기록
+  if (lastPlayDate !== todayKey) {
+    streak = lastPlayDate === yesterday ? streak + 1 : 1;
+  }
+  lastResult = { elapsed, diff, gradeIdx, grade };
+
+  // 데일리 챌린지 업데이트
+  updateDaily(gradeIdx, diff);
+
+  playStop(gradeIdx);
+  saveStats();
+  updateHUD();
+  shareBtn.style.display = 'block';
+}
+
+function updateDaily(gradeIdx, diff) {
+  if (dailySave.cleared) return;
+  var ch = todayChallenge;
+  var prev = dailySave.progress || 0;
+  var next = prev;
+
+  if (ch.key === 'perfect')  next = gradeIdx === 0 ? prev + 1 : prev;
+  if (ch.key === 'perfect3') next = gradeIdx === 0 ? prev + 1 : prev;
+  if (ch.key === 'master')   next = gradeIdx <= 1  ? prev + 1 : prev;
+  if (ch.key === 'good5')    next = gradeIdx <= 2  ? prev + 1 : prev;
+  if (ch.key === 'tries10')  next = prev + 1;
+  if (ch.key === 'tries20')  next = prev + 1;
+  if (ch.key === 'avg50') {
+    if (ST.allDiffs.length >= 5) {
+      var recent = ST.allDiffs.slice(-5);
+      var avg = recent.reduce(function(a,b){return a+b;},0)/recent.length;
+      next = avg <= 0.05 ? 1 : 0;
+    }
+  }
+
+  dailySave.progress = next;
+  if (next >= ch.goal && !dailySave.cleared) {
+    dailySave.cleared = true;
+    ST.dailyCleared++;
+    showToast('🎉 오늘의 챌린지 클리어! +보너스');
+  }
+  renderDaily();
+}
+
+// ── 공유 ──
+function doShare() {
+  if (!lastResult) return;
+  var r = lastResult;
+  var sign = r.elapsed >= TARGET ? '+' : '-';
+  var rankPct = calcRankPct(r.diff);
+  var text = [
+    '⏱️ 1초의 사나이',
+    '',
+    '나의 기록: ' + r.elapsed.toFixed(3) + '초',
+    '오차: ' + sign + r.diff.toFixed(3) + '초',
+    r.grade.label,
+    '전국 상위 ' + rankPct + '%',
+    '',
+    '도전해봐! → https://mindweaver74.github.io/one-second',
+    '#1초를눌러라 #반응속도테스트'
+  ].join('\n');
+
+  if (navigator.share) {
+    navigator.share({ title: '1초를 눌러라!', text: text })
+      .catch(function(){});
+  } else {
+    // 클립보드 복사
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(function(){
+        showToast('📋 클립보드에 복사됐어요!');
+      });
+    } else {
+      // 구형 방식
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select(); document.execCommand('copy');
+      document.body.removeChild(ta);
+      showToast('📋 클립보드에 복사됐어요!');
+    }
+  }
+}
+
+function calcRankPct(diff) {
+  // 오차에 따른 대략적 상위 % 계산 (게임 내 추정)
+  if (diff <= 0.010) return 1;
+  if (diff <= 0.030) return 5;
+  if (diff <= 0.060) return 15;
+  if (diff <= 0.100) return 35;
+  if (diff <= 0.200) return 60;
+  return 85;
+}
+
+// ── 토스트 ──
+var toastTimer = null;
+function showToast(msg) {
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ el.classList.remove('show'); }, 2500);
+}
+
+// ── 이벤트 ──
+function addEL(el, ev, fn, opts) { if(el) el.addEventListener(ev, fn, opts||false); }
+
+// 탭 버튼
+addEL(tapBtn, 'touchstart', function(e) {
+  e.preventDefault(); e.stopPropagation();
+  if (!gameActive) return;
+  if (!pressing) startTimer();
+}, false);
+addEL(tapBtn, 'touchend', function(e) {
+  e.preventDefault(); e.stopPropagation();
+  if (!gameActive) return;
+  if (pressing) stopTimer();
+}, false);
+addEL(tapBtn, 'mousedown', function(e) {
+  e.stopPropagation();
+  if (!gameActive) return;
+  if (!pressing) startTimer();
+}, false);
+addEL(window, 'mouseup', function() {
+  if (pressing) stopTimer();
+}, false);
+
+// 공유 버튼
+var shareTouched = false;
+addEL(shareBtn, 'touchstart', function(e){ e.preventDefault(); e.stopPropagation(); }, false);
+addEL(shareBtn, 'touchend', function(e){
+  e.preventDefault(); e.stopPropagation();
+  shareTouched = true; doShare();
+  setTimeout(function(){ shareTouched = false; }, 600);
+}, false);
+addEL(shareBtn, 'click', function(){ if(shareTouched) return; doShare(); }, false);
+
+// 시작 버튼
+var startTouched = false;
+addEL(startBtn2, 'touchstart', function(e){ e.preventDefault(); e.stopPropagation(); }, false);
+addEL(startBtn2, 'touchend', function(e){
+  e.preventDefault(); e.stopPropagation();
+  startTouched = true; beginGame();
+  setTimeout(function(){ startTouched = false; }, 600);
+}, false);
+addEL(startBtn2, 'click', function(){ if(startTouched) return; beginGame(); }, false);
+
+function beginGame() {
+  getAC();
+  overlay.style.display = 'none';
+  gameActive = true;
+  updateHUD();
+  renderDaily();
+}
+
+// ── 초기화 ──
+updateHUD();
+renderDaily();
+</script>
+</body>
+</html>
