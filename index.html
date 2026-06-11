@@ -314,40 +314,138 @@ function renderDaily() {
 
 // ── 오디오 ──
 var audioCtx = null;
+var tensionOsc = null, tensionGain = null;
+var tensionLfoOsc = null, tensionLfoGain = null;
+var isTensionPlaying = false;
+
 function getAC() {
   if (!audioCtx) try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){}
   if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
   return audioCtx;
 }
+
+function stopTension() {
+  try { if (tensionOsc)    { tensionOsc.stop();    tensionOsc    = null; } } catch(e) {}
+  try { if (tensionLfoOsc) { tensionLfoOsc.stop(); tensionLfoOsc = null; } } catch(e) {}
+  tensionGain = null; tensionLfoGain = null;
+  isTensionPlaying = false;
+}
+
 function playStart() {
   var ac = getAC(); if (!ac) return;
+  stopTension();
   try {
-    var o = ac.createOscillator(), g = ac.createGain();
-    o.connect(g); g.connect(ac.destination);
     var t = ac.currentTime;
-    o.type = 'sine';
-    o.frequency.setValueAtTime(440, t);
-    g.gain.setValueAtTime(0.15, t);
-    g.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
-    o.start(t); o.stop(t + 0.12);
+    // 시작 틱
+    var o0 = ac.createOscillator(), g0 = ac.createGain();
+    o0.connect(g0); g0.connect(ac.destination);
+    o0.type = 'sine'; o0.frequency.value = 440;
+    g0.gain.setValueAtTime(0.2, t);
+    g0.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+    o0.start(t); o0.stop(t + 0.09);
+
+    // 메인 긴장감 오실레이터
+    tensionOsc  = ac.createOscillator();
+    tensionGain = ac.createGain();
+    // LFO (진동 떨림)
+    tensionLfoOsc  = ac.createOscillator();
+    tensionLfoGain = ac.createGain();
+    tensionLfoOsc.type = 'sine';
+    tensionLfoOsc.frequency.value = 4;
+    tensionLfoGain.gain.value = 3;
+    tensionLfoOsc.connect(tensionLfoGain);
+    tensionLfoGain.connect(tensionOsc.frequency);
+
+    tensionOsc.type = 'sine';
+    tensionOsc.frequency.value = 180;
+    tensionOsc.connect(tensionGain);
+    tensionGain.gain.setValueAtTime(0.0, t);
+    tensionGain.gain.linearRampToValueAtTime(0.07, t + 0.2);
+    tensionGain.connect(ac.destination);
+
+    tensionOsc.start(t);
+    tensionLfoOsc.start(t);
+    isTensionPlaying = true;
   } catch(e) {}
 }
-function playStop(grade) {
+
+function updateTension(elapsed) {
+  if (!isTensionPlaying || !tensionOsc || !tensionGain || !tensionLfoOsc || !tensionLfoGain) return;
   var ac = getAC(); if (!ac) return;
   try {
     var t = ac.currentTime;
-    var freqs = grade === 0 ? [880, 1108, 1320] :
-                grade === 1 ? [660, 880] :
-                grade <= 3  ? [528] : [330];
-    freqs.forEach(function(f, i) {
+    if (elapsed <= 1.0) {
+      // 0→1초: 음 상승 180→880Hz, 볼륨 증가, 떨림 가속
+      var p = elapsed / 1.0;
+      tensionOsc.frequency.setTargetAtTime(180 + 700 * Math.pow(p, 1.6), t, 0.04);
+      tensionGain.gain.setTargetAtTime(0.06 + 0.18 * p, t, 0.04);
+      tensionLfoOsc.frequency.setTargetAtTime(4 + 14 * p, t, 0.04);
+      tensionLfoGain.gain.setTargetAtTime(3 + 25 * p, t, 0.04);
+    } else {
+      // 1초 초과: 빠르게 식어감
+      var over = Math.min(elapsed - 1.0, 0.8);
+      var decay = 1 - over / 0.8;
+      tensionOsc.frequency.setTargetAtTime(880 * decay + 120, t, 0.06);
+      tensionGain.gain.setTargetAtTime(0.24 * Math.max(0, decay), t, 0.06);
+      tensionLfoOsc.frequency.setTargetAtTime(18 * decay + 2, t, 0.06);
+      tensionLfoGain.gain.setTargetAtTime(28 * decay + 1, t, 0.06);
+    }
+  } catch(e) {}
+}
+
+function playStop(grade) {
+  stopTension();
+  var ac = getAC(); if (!ac) return;
+  try {
+    var t = ac.currentTime;
+    if (grade === 0) {
+      // 신의 손: 5음 상승 팡파레
+      [523, 659, 784, 1047, 1319].forEach(function(f, i) {
+        var o = ac.createOscillator(), g = ac.createGain();
+        o.connect(g); g.connect(ac.destination);
+        o.type = 'sine';
+        o.frequency.value = f;
+        g.gain.setValueAtTime(0.22, t + i*0.055);
+        g.gain.exponentialRampToValueAtTime(0.001, t + i*0.055 + 0.5);
+        o.start(t + i*0.055); o.stop(t + i*0.055 + 0.55);
+      });
+    } else if (grade === 1) {
+      // 달인: 밝은 두 음
+      [659, 880].forEach(function(f, i) {
+        var o = ac.createOscillator(), g = ac.createGain();
+        o.connect(g); g.connect(ac.destination);
+        o.type = 'sine'; o.frequency.value = f;
+        g.gain.setValueAtTime(0.2, t + i*0.09);
+        g.gain.exponentialRampToValueAtTime(0.001, t + i*0.09 + 0.35);
+        o.start(t + i*0.09); o.stop(t + i*0.09 + 0.38);
+      });
+    } else if (grade === 2) {
+      // 고수: 맑은 단음
       var o = ac.createOscillator(), g = ac.createGain();
       o.connect(g); g.connect(ac.destination);
-      o.type = grade <= 1 ? 'sine' : 'triangle';
-      o.frequency.setValueAtTime(f, t + i * 0.06);
-      g.gain.setValueAtTime(0.18, t + i * 0.06);
-      g.gain.exponentialRampToValueAtTime(0.001, t + i * 0.06 + 0.3);
-      o.start(t + i * 0.06); o.stop(t + i * 0.06 + 0.32);
-    });
+      o.type = 'triangle'; o.frequency.value = 528;
+      g.gain.setValueAtTime(0.18, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+      o.start(t); o.stop(t + 0.32);
+    } else if (grade <= 4) {
+      // 보통/아쉽다: 낮은 단음
+      var o = ac.createOscillator(), g = ac.createGain();
+      o.connect(g); g.connect(ac.destination);
+      o.type = 'triangle'; o.frequency.value = 330;
+      g.gain.setValueAtTime(0.14, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+      o.start(t); o.stop(t + 0.27);
+    } else {
+      // 다시하자: 하강 실망음
+      var o = ac.createOscillator(), g = ac.createGain();
+      o.connect(g); g.connect(ac.destination);
+      o.type = 'sawtooth';
+      o.frequency.setValueAtTime(220, t);
+      o.frequency.exponentialRampToValueAtTime(110, t + 0.3);
+      g.gain.setValueAtTime(0.12, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+      o.start(t); o.stop(t + 0.32);
+    }
   } catch(e) {}
 }
 
@@ -375,6 +473,9 @@ function timerLoop() {
     counterEl.style.color = '#ff8080';
   }
 
+  // 긴장감 사운드 업데이트
+  updateTension(elapsed);
+
   // 2초 넘으면 자동 종료
   if (elapsed > 2.5) {
     stopTimer();
@@ -400,6 +501,7 @@ function startTimer() {
   document.getElementById('tap-btn-text').textContent = '✋';
   document.getElementById('tap-btn-sub').textContent = '1초라고 느껴질 때 떼세요!';
   playStart();
+  startTension();
   rafId = requestAnimationFrame(timerLoop);
 }
 
@@ -407,6 +509,8 @@ function stopTimer() {
   if (!pressing) return;
   pressing = false;
   cancelAnimationFrame(rafId);
+  stopTension();
+  stopTension();
 
   var elapsed = (performance.now() - startTime) / 1000;
   var diff = Math.abs(elapsed - TARGET);
