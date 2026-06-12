@@ -7,170 +7,188 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <title>1초를 눌러라!</title>
 <style>
-:root { --grad: linear-gradient(135deg,#f84,#f4a); }
-*{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; -webkit-user-select:none; user-select:none; }
-html,body{ width:100%; height:100%; background:#09090f; color:#fff; font-family:-apple-system,'Helvetica Neue',Arial,sans-serif; overflow:hidden; touch-action:none; }
-
-#wrap{ width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; padding-top:max(20px,env(safe-area-inset-top)); padding-bottom:max(20px,env(safe-area-inset-bottom)); }
-
-/* 상단 */
-#top-bar{ width:100%; max-width:380px; display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
-.top-stat{ text-align:center; }
-.top-stat-label{ font-size:10px; color:rgba(255,255,255,0.35); letter-spacing:1px; }
-.top-stat-val{ font-size:18px; font-weight:700; }
-
-/* 메인 카운터 */
-#counter-wrap{ text-align:center; margin-bottom:8px; }
-#counter{ font-size:86px; font-weight:900; letter-spacing:-4px; line-height:1; font-variant-numeric:tabular-nums; transition:color .1s; }
-#counter.running{ color:#fff; text-shadow:0 0 40px rgba(255,255,255,0.3); }
-#counter.ready{ color:rgba(255,255,255,0.25); }
-#counter-sub{ font-size:13px; color:rgba(255,255,255,0.35); margin-top:6px; letter-spacing:1px; }
-
-/* 목표 표시 */
-#target-wrap{ text-align:center; margin-bottom:20px; }
-#target-label{ font-size:12px; color:rgba(255,255,255,0.4); }
-#target-val{ font-size:22px; font-weight:700; color:#f0c040; }
+:root{--grad:linear-gradient(135deg,#ff6b35,#ff4081);}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;}
+html,body{width:100%;height:100%;background:#09090f;color:#fff;font-family:-apple-system,'Helvetica Neue',Arial,sans-serif;overflow:hidden;touch-action:none;}
+#wrap{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 16px;padding-top:max(10px,env(safe-area-inset-top));padding-bottom:max(10px,env(safe-area-inset-bottom));}
+#top-bar{width:100%;max-width:380px;display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.top-stat{text-align:center;}
+.top-stat-label{font-size:10px;color:rgba(255,255,255,0.35);letter-spacing:1px;}
+.top-stat-val{font-size:18px;font-weight:700;}
+#counter-wrap{text-align:center;margin-bottom:2px;}
+#counter{font-size:62px;font-weight:900;letter-spacing:-3px;line-height:1;font-variant-numeric:tabular-nums;transition:color .1s;}
+#counter.running{color:#fff;text-shadow:0 0 30px rgba(255,255,255,0.25);}
+#counter.ready{color:rgba(255,255,255,0.25);}
+#counter-sub{font-size:12px;color:rgba(255,255,255,0.35);margin-top:2px;letter-spacing:1px;}
+#target-wrap{text-align:center;margin-bottom:8px;}
+#target-label{font-size:12px;color:rgba(255,255,255,0.4);}
+#target-val{font-size:18px;font-weight:700;color:#f0c040;}
 
 /* 탭 버튼 */
-#tap-btn{
-  width:200px; height:200px; border-radius:50%; touch-action:none; -webkit-touch-callout:none;
-  border:none; cursor:pointer;
-  background:rgba(255,255,255,0.06);
-  border:3px solid rgba(255,255,255,0.12);
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-  transition:transform .06s, box-shadow .1s;
-  position:relative; overflow:visible;
-  -webkit-appearance:none; z-index:5;
-  margin-bottom:20px;
-  flex-shrink:0;
-}
-#tap-btn.ready-state{ border-color:rgba(255,255,255,0.2); box-shadow:0 0 0 rgba(255,255,255,0); }
-#tap-btn.running-state{ border-color:rgba(255,200,80,0.6); box-shadow:0 0 30px rgba(255,180,50,0.25); }
-#tap-btn.active{ transform:scale(0.93); }
-#tap-btn-text{ font-size:20px; font-weight:700; color:rgba(255,255,255,0.7); pointer-events:none; }
-#tap-btn-sub{ font-size:12px; color:rgba(255,255,255,0.35); margin-top:4px; pointer-events:none; }
+#tap-btn{width:200px;height:200px;border-radius:50%;border:none;cursor:pointer;background:rgba(255,255,255,0.06);border:3px solid rgba(255,255,255,0.12);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:transform .06s,box-shadow .1s;position:relative;overflow:visible;-webkit-appearance:none;z-index:5;margin-bottom:10px;flex-shrink:0;touch-action:none;-webkit-touch-callout:none;}
+#tap-btn.running-state{border-color:rgba(255,200,80,0.6);box-shadow:0 0 30px rgba(255,180,50,0.2);}
+#tap-btn-text{font-size:20px;font-weight:700;color:rgba(255,255,255,0.7);pointer-events:none;position:relative;z-index:6;}
+#tap-btn-sub{font-size:12px;color:rgba(255,255,255,0.35);margin-top:4px;pointer-events:none;position:relative;z-index:6;}
 
 /* 진행 링 */
-#progress-ring{ position:absolute; top:-3px; left:-3px; width:206px; height:206px; pointer-events:none; }
-#ring-track{ fill:none; stroke:rgba(255,255,255,0.06); stroke-width:6; }
-#ring-fill{ fill:none; stroke-width:5; stroke-linecap:round;
-  stroke-dasharray:610; stroke-dashoffset:610;
-  transform:rotate(-90deg); transform-origin:103px 103px;
-  transition:stroke .2s; }
+#progress-ring{position:absolute;top:-3px;left:-3px;width:206px;height:206px;pointer-events:none;}
+#ring-track{fill:none;stroke:rgba(255,255,255,0.06);stroke-width:6;}
+#ring-fill{fill:none;stroke-width:5;stroke-linecap:round;stroke-dasharray:610;stroke-dashoffset:610;transform:rotate(-90deg);transform-origin:103px 103px;transition:stroke .2s;}
 
-/* 결과 표시 */
-#result-wrap{ text-align:center; min-height:80px; display:flex; flex-direction:column; align-items:center; justify-content:center; }
-#result-time{ font-size:48px; font-weight:900; letter-spacing:-2px; opacity:0; transition:all .2s; }
-#result-diff{ font-size:16px; font-weight:600; margin-top:4px; opacity:0; transition:all .2s; }
-#result-grade{ font-size:14px; font-weight:700; padding:4px 14px; border-radius:20px; margin-top:8px; opacity:0; transition:all .2s; display:inline-block; }
+/* 축구공 SVG */
+#soccer-wrap{position:absolute;width:30px;height:30px;left:50%;top:50%;transform:translate(-50%,-50%) scale(0.05);opacity:0;pointer-events:none;z-index:4;overflow:visible;}
 
-/* 통계 바 */
-#stats-bar{ width:100%; max-width:380px; display:flex; gap:8px; margin-top:8px; }
-.stat-card{ flex:1; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:10px 6px; text-align:center; }
-.stat-card-val{ font-size:18px; font-weight:700; }
-.stat-card-lbl{ font-size:10px; color:rgba(255,255,255,0.35); margin-top:2px; }
+/* 결과 */
+#result-wrap{text-align:center;min-height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+#result-time{font-size:36px;font-weight:900;letter-spacing:-1px;opacity:0;transition:all .2s;}
+#result-diff{font-size:13px;font-weight:600;margin-top:2px;opacity:0;transition:all .2s;}
+#result-grade{font-size:13px;font-weight:700;padding:3px 12px;border-radius:20px;margin-top:4px;opacity:0;transition:all .2s;display:inline-block;}
+.stat-card-val{font-size:16px;font-weight:700;}
+.stat-card-lbl{font-size:10px;color:rgba(255,255,255,0.35);margin-top:2px;}
 
-/* 데일리 챌린지 */
-#daily-wrap{ width:100%; max-width:380px; margin-top:8px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:12px 16px; }
-#daily-top{ display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
-#daily-title{ font-size:12px; font-weight:600; color:rgba(255,255,255,0.5); }
-#daily-status{ font-size:12px; font-weight:700; }
-#daily-desc{ font-size:14px; font-weight:600; margin-bottom:8px; }
-#daily-bar-bg{ height:5px; background:rgba(255,255,255,0.08); border-radius:3px; overflow:hidden; }
-#daily-bar{ height:100%; border-radius:3px; background:var(--grad); width:0%; transition:width .4s; }
+/* 통계 */
+#stats-bar{width:100%;max-width:380px;display:flex;gap:6px;margin-top:6px;}
+.stat-card{flex:1;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:7px 4px;text-align:center;}
+
+/* 데일리 */
+#daily-wrap{width:100%;max-width:380px;margin-top:6px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:8px 14px;}
+#daily-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+#daily-title{font-size:12px;font-weight:600;color:rgba(255,255,255,0.5);}
+#daily-status{font-size:12px;font-weight:700;}
+#daily-desc{font-size:13px;font-weight:600;margin-bottom:4px;}
+#daily-bar-bg{height:5px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;}
+#daily-bar{height:100%;border-radius:3px;background:var(--grad);width:0%;transition:width .4s;}
 
 /* 공유 버튼 */
-#share-btn{ display:none; margin-top:8px; padding:12px 32px; border-radius:50px; border:none; font-size:15px; font-weight:700; cursor:pointer; background:var(--grad); color:#fff; -webkit-appearance:none; position:relative; z-index:10; }
+#share-btn{display:none;margin-top:6px;padding:11px 30px;border-radius:50px;border:none;font-size:15px;font-weight:700;cursor:pointer;background:var(--grad);color:#fff;-webkit-appearance:none;position:relative;z-index:10;}
 
 /* 오버레이 */
-#overlay{ position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(6,6,14,0.97); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:100; text-align:center; padding:24px; padding-top:max(24px,env(safe-area-inset-top)); padding-bottom:max(24px,env(safe-area-inset-bottom)); }
-
-
-
-
-
-
-
-
-/* 결과 토스트 */
-#toast{ position:fixed; bottom:max(30px,env(safe-area-inset-bottom)); left:50%; transform:translateX(-50%) translateY(100px); background:rgba(30,30,40,0.97); border:1px solid rgba(255,255,255,0.15); border-radius:16px; padding:12px 20px; font-size:13px; color:rgba(255,255,255,0.8); z-index:200; opacity:0; transition:all .3s; white-space:nowrap; }
-#toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
-
-/* 피드백 애니 */
-@keyframes pop{ 0%{transform:scale(0.8);opacity:0} 60%{transform:scale(1.1)} 100%{transform:scale(1);opacity:1} }
-.pop-in{ animation:pop .3s ease-out forwards; }
-
-.ov-title{font-size:38px;font-weight:900;letter-spacing:-1px;background:linear-gradient(135deg,#ff6b35,#ff4081);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px;}
-.ov-sub{font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:28px;line-height:1.7;}
-.ov-steps{width:100%;max-width:280px;margin-bottom:32px;display:flex;flex-direction:column;gap:14px;}
+#overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(6,6,14,0.97);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100;text-align:center;padding:24px;padding-top:max(24px,env(safe-area-inset-top));padding-bottom:max(24px,env(safe-area-inset-bottom));}
+.ov-title{font-size:38px;font-weight:900;letter-spacing:-2px;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px;}
+.ov-sub{font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:24px;line-height:1.7;}
+.ov-steps{width:100%;max-width:280px;margin-bottom:28px;display:flex;flex-direction:column;gap:14px;}
 .ov-step{display:flex;align-items:center;gap:14px;}
-.ov-step-num{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#ff6b35,#ff4081);color:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ov-step-num{width:30px;height:30px;border-radius:50%;background:var(--grad);color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .ov-step-txt{font-size:14px;color:#ffffff;font-weight:500;}
-#start-btn{padding:16px 52px;border-radius:50px;border:none;font-size:17px;font-weight:700;cursor:pointer;background:linear-gradient(135deg,#ff6b35,#ff4081);color:#ffffff;-webkit-appearance:none;min-width:200px;position:relative;z-index:110;letter-spacing:0.5px;}
+#start-btn{padding:16px 52px;border-radius:50px;border:none;font-size:17px;font-weight:700;cursor:pointer;background:var(--grad);color:#ffffff;-webkit-appearance:none;min-width:200px;position:relative;z-index:110;box-shadow:0 4px 20px rgba(255,80,100,0.4);}
+
+/* 등급별 팝인 */
+@keyframes pop{0%{transform:scale(0.8);opacity:0}60%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+.pop-in{animation:pop .3s ease-out forwards;}
+
+/* 토스트 */
+#toast{position:fixed;bottom:max(30px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%) translateY(100px);background:rgba(30,30,40,0.97);border:1px solid rgba(255,255,255,0.15);border-radius:16px;padding:12px 20px;font-size:13px;color:rgba(255,255,255,0.8);z-index:200;opacity:0;transition:all .3s;white-space:nowrap;}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 </style>
 </head>
 <body>
+<div id="toast"></div>
 
 <div id="wrap">
   <div id="top-bar">
-    <div class="top-stat">
-      <div class="top-stat-label">BEST</div>
-      <div class="top-stat-val" id="best-disp">—</div>
-    </div>
-    <div class="top-stat">
-      <div class="top-stat-label">TODAY</div>
-      <div class="top-stat-val" id="today-disp">0판</div>
-    </div>
-    <div class="top-stat">
-      <div class="top-stat-label">STREAK</div>
-      <div class="top-stat-val" id="streak-disp">🔥0</div>
-    </div>
+    <div class="top-stat"><div class="top-stat-label">BEST</div><div class="top-stat-val" id="best-disp">—</div></div>
+    <div class="top-stat"><div class="top-stat-label">TODAY</div><div class="top-stat-val" id="today-disp">0판</div></div>
+    <div class="top-stat"><div class="top-stat-label">STREAK</div><div class="top-stat-val" id="streak-disp">0</div></div>
   </div>
-
   <div id="counter-wrap">
     <div id="counter" class="ready">0.000</div>
     <div id="counter-sub">초</div>
   </div>
-
   <div id="target-wrap">
-    <div id="target-label">🎯 목표</div>
+    <div id="target-label">목표</div>
     <div id="target-val">1.000초</div>
   </div>
-
   <button id="tap-btn">
     <svg id="progress-ring" viewBox="0 0 206 206">
       <circle id="ring-track" cx="103" cy="103" r="97"/>
       <circle id="ring-fill" cx="103" cy="103" r="97"/>
     </svg>
+    <!-- 축구공 SVG -->
+    <svg id="soccer-wrap" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:30px;height:30px;left:50%;top:50%;transform:translate(-50%,-50%) scale(0.05);opacity:0;pointer-events:none;z-index:4;overflow:visible;">
+  <defs>
+    <radialGradient id="ballBg" cx="40%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="60%" stop-color="#f0f0f0"/>
+      <stop offset="100%" stop-color="#d8d8d8"/>
+    </radialGradient>
+    <clipPath id="ballClip"><circle cx="100" cy="100" r="94"/></clipPath>
+  </defs>
+
+  <!-- 공 본체 -->
+  <circle cx="100" cy="100" r="94" fill="url(#ballBg)"/>
+
+  <!-- 공인구 스타일 곡선 패널들 -->
+  <g clip-path="url(#ballClip)">
+    <!-- 빨간 패널 (좌상) -->
+    <path d="M 10,30 Q 40,10 80,25 Q 60,60 30,80 Q 10,60 10,30 Z" fill="#e53030" opacity="0.88"/>
+    <!-- 빨간 줄무늬 텍스처 -->
+    <path d="M 20,35 Q 45,18 75,30" fill="none" stroke="#c00" stroke-width="1.5" opacity="0.5"/>
+    <path d="M 18,48 Q 46,28 72,42" fill="none" stroke="#c00" stroke-width="1.5" opacity="0.5"/>
+    <path d="M 16,60 Q 42,42 65,54" fill="none" stroke="#c00" stroke-width="1.5" opacity="0.5"/>
+
+    <!-- 파란 패널 (중앙~우상) -->
+    <path d="M 90,10 Q 130,5 160,25 Q 150,60 120,75 Q 95,55 90,10 Z" fill="#1a5fb0" opacity="0.88"/>
+    <!-- 파란 별 -->
+    <text x="128" y="52" font-size="14" fill="rgba(100,200,255,0.8)" text-anchor="middle">★</text>
+    <text x="112" y="38" font-size="9"  fill="rgba(100,200,255,0.7)" text-anchor="middle">★</text>
+    <text x="145" y="42" font-size="9"  fill="rgba(100,200,255,0.7)" text-anchor="middle">★</text>
+
+    <!-- 초록 패널 (우하) -->
+    <path d="M 155,70 Q 190,90 192,130 Q 170,155 140,160 Q 120,130 130,95 Q 142,80 155,70 Z" fill="#2d9e3a" opacity="0.88"/>
+    <!-- 초록 별 -->
+    <text x="162" y="118" font-size="12" fill="rgba(150,255,150,0.8)" text-anchor="middle">★</text>
+    <text x="148" y="148" font-size="9"  fill="rgba(150,255,150,0.7)" text-anchor="middle">★</text>
+
+    <!-- 초록 패널 (상단) -->
+    <path d="M 115,5 Q 155,8 185,30 Q 175,50 155,55 Q 130,35 115,5 Z" fill="#2d9e3a" opacity="0.75"/>
+
+    <!-- 중앙 흰 곡선 (소용돌이) -->
+    <path d="M 55,100 Q 70,55 100,50 Q 135,48 145,80 Q 150,110 125,130 Q 100,148 75,140 Q 50,128 55,100 Z"
+          fill="none" stroke="white" stroke-width="7" opacity="0.9"/>
+    <path d="M 60,100 Q 74,60 100,56 Q 130,54 140,82 Q 144,108 122,126 Q 100,142 78,136 Q 58,126 60,100 Z"
+          fill="none" stroke="white" stroke-width="3" opacity="0.5"/>
+
+    <!-- FIFA 트로피 아이콘 (중앙) -->
+    <text x="100" y="108" font-size="11" fill="#1a5fb0" text-anchor="middle" font-weight="bold">FIFA</text>
+    <!-- 트로피 심볼 간략화 -->
+    <path d="M 94,82 L 94,72 L 106,72 L 106,82 Q 110,88 108,94 Q 104,98 100,98 Q 96,98 92,94 Q 90,88 94,82 Z" fill="#c8a820" opacity="0.9"/>
+    <rect x="97" y="98" width="6" height="5" fill="#c8a820" opacity="0.9"/>
+    <rect x="93" y="103" width="14" height="3" rx="1" fill="#c8a820" opacity="0.9"/>
+
+    <!-- 하단 초록 TRIONDA 텍스트 느낌 -->
+    <path d="M 30,155 Q 70,170 110,168 Q 150,165 175,148" fill="none" stroke="#2d9e3a" stroke-width="4" opacity="0.7"/>
+
+    <!-- adidas 3선 (좌) -->
+    <line x1="22" y1="88" x2="42" y2="78" stroke="white" stroke-width="3" opacity="0.8"/>
+    <line x1="18" y1="97" x2="38" y2="87" stroke="white" stroke-width="3" opacity="0.8"/>
+    <line x1="14" y1="106" x2="34" y2="96" stroke="white" stroke-width="3" opacity="0.8"/>
+  </g>
+
+  <!-- 테두리 -->
+  <circle cx="100" cy="100" r="94" fill="none" stroke="#bbb" stroke-width="2"/>
+  <!-- 하이라이트 -->
+  <ellipse cx="65" cy="58" rx="22" ry="13" fill="rgba(255,255,255,0.5)" transform="rotate(-35,65,58)"/>
+</svg>
     <div id="tap-btn-text">TAP</div>
     <div id="tap-btn-sub">터치해서 시작!</div>
   </button>
-
   <div id="result-wrap">
     <div id="result-time"></div>
     <div id="result-diff"></div>
     <div id="result-grade"></div>
   </div>
-
   <div id="stats-bar">
     <div class="stat-card"><div class="stat-card-val" id="stat-avg">—</div><div class="stat-card-lbl">평균</div></div>
     <div class="stat-card"><div class="stat-card-val" id="stat-tries">0</div><div class="stat-card-lbl">총 도전</div></div>
     <div class="stat-card"><div class="stat-card-val" id="stat-perfect">0</div><div class="stat-card-lbl">신의 손</div></div>
   </div>
-
   <div id="daily-wrap">
-    <div id="daily-top">
-      <div id="daily-title">📅 오늘의 챌린지</div>
-      <div id="daily-status"></div>
-    </div>
+    <div id="daily-top"><div id="daily-title">오늘의 챌린지</div><div id="daily-status"></div></div>
     <div id="daily-desc">로딩 중...</div>
     <div id="daily-bar-bg"><div id="daily-bar"></div></div>
   </div>
-
-  <button id="share-btn">📤 결과 공유하기</button>
+  <button id="share-btn">결과 공유하기</button>
 </div>
-
-<div id="toast"></div>
 
 <div id="overlay">
   <div class="ov-title">1초를 눌러라!</div>
@@ -184,535 +202,379 @@ html,body{ width:100%; height:100%; background:#09090f; color:#fff; font-family:
 </div>
 
 <script>
-// ── 등급 ──
-var GRADES = [
-  { max:0.010, label:'🏆 신의 손',   color:'#fff',   bg:'rgba(255,255,255,0.15)', pts:1000 },
-  { max:0.030, label:'⚡ 달인',      color:'#ffd700', bg:'rgba(255,215,0,0.15)',   pts:800  },
-  { max:0.060, label:'🎯 고수',      color:'#4af',   bg:'rgba(80,180,255,0.15)',  pts:600  },
-  { max:0.100, label:'👍 보통',      color:'#0f9',   bg:'rgba(0,220,140,0.15)',   pts:400  },
-  { max:0.200, label:'😅 아쉽다',    color:'#fa4',   bg:'rgba(255,180,50,0.15)',  pts:200  },
-  { max:9999,  label:'😭 다시하자',  color:'#888',   bg:'rgba(150,150,150,0.1)',  pts:50   },
+var GRADES=[
+  {max:0.010,label:'신의 손',  color:'#fff',   bg:'rgba(255,255,255,0.15)',pts:1000},
+  {max:0.030,label:'달인',     color:'#ffd700',bg:'rgba(255,215,0,0.15)',  pts:800},
+  {max:0.060,label:'고수',     color:'#4af',   bg:'rgba(80,180,255,0.15)', pts:600},
+  {max:0.100,label:'보통',     color:'#0f9',   bg:'rgba(0,220,140,0.15)',  pts:400},
+  {max:0.200,label:'아쉽다',   color:'#fa4',   bg:'rgba(255,180,50,0.15)', pts:200},
+  {max:9999, label:'다시하자', color:'#888',   bg:'rgba(150,150,150,0.1)', pts:50},
+];
+var DAILIES=[
+  {desc:'신의 손(±0.010초) 1회 달성', key:'perfect', goal:1},
+  {desc:'달인(±0.030초) 3회 달성',    key:'master',  goal:3},
+  {desc:'평균 오차 0.050초 이하',      key:'avg50',   goal:1},
+  {desc:'10판 연속 도전',              key:'tries10', goal:10},
+  {desc:'고수 이상 5회 달성',          key:'good5',   goal:5},
+  {desc:'총 20판 도전',                key:'tries20', goal:20},
+  {desc:'신의 손 3회 달성',            key:'perfect3',goal:3},
 ];
 
-// ── 데일리 챌린지 ──
-var DAILIES = [
-  { desc:'신의 손(±0.010초) 1회 달성',  key:'perfect', goal:1  },
-  { desc:'달인(±0.030초) 3회 달성',      key:'master',  goal:3  },
-  { desc:'평균 오차 0.050초 이하',        key:'avg50',   goal:1  },
-  { desc:'10판 연속 도전',                key:'tries10', goal:10 },
-  { desc:'고수 이상 5회 달성',            key:'good5',   goal:5  },
-  { desc:'총 20판 도전',                  key:'tries20', goal:20 },
-  { desc:'신의 손 3회 달성',              key:'perfect3',goal:3  },
-];
+var TARGET=1.000;
+var tapState='idle', startTime=0, rafId=0;
+var gameActive=false, lastResult=null;
 
-// ── 상태 ──
-var TARGET = 1.000; // 목표 시간 (초)
-var pressing = false, startTime = 0, rafId = 0;
-var tapState = 'idle'; // 'idle' | 'running'
-var gameActive = false;
-var lastResult = null;
-
-// 영구 통계
-var ST = {
-  bestDiff:    parseFloat(localStorage.getItem('osBestDiff') || '9999'),
-  totalTries:  parseInt(localStorage.getItem('osTries')    || '0'),
-  totalPerfect:parseInt(localStorage.getItem('osPerfect')  || '0'),
-  allDiffs:    JSON.parse(localStorage.getItem('osDiffs')  || '[]'),
-  dailyCleared:parseInt(localStorage.getItem('osDailyClr')|| '0'),
+var ST={
+  bestDiff:    parseFloat(localStorage.getItem('osBestDiff')||'9999'),
+  totalTries:  parseInt(localStorage.getItem('osTries')    ||'0'),
+  totalPerfect:parseInt(localStorage.getItem('osPerfect')  ||'0'),
+  allDiffs:    JSON.parse(localStorage.getItem('osDiffs')  ||'[]'),
+  dailyCleared:parseInt(localStorage.getItem('osDailyClr')||'0'),
 };
 
-var todayKey = (function(){
-  var d = new Date();
-  return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
-})();
-var dailySave = JSON.parse(localStorage.getItem('osDaily') || '{}');
-if (dailySave.date !== todayKey) {
-  var ci = Math.abs((function(s){
-    var h=0; for(var i=0;i<s.length;i++) h=(Math.imul(31,h)+s.charCodeAt(i))|0; return h;
-  })(todayKey)) % DAILIES.length;
-  dailySave = { date:todayKey, idx:ci, progress:0, cleared:false,
-    tries:0, perfect:0, master:0, good5:0, avg50done:false };
-  localStorage.setItem('osDaily', JSON.stringify(dailySave));
+var todayKey=(function(){var d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();})();
+var dailySave=JSON.parse(localStorage.getItem('osDaily')||'{}');
+if(dailySave.date!==todayKey){
+  var ci=Math.abs((function(s){var h=0;for(var i=0;i<s.length;i++)h=(Math.imul(31,h)+s.charCodeAt(i))|0;return h;})(todayKey))%DAILIES.length;
+  dailySave={date:todayKey,idx:ci,progress:0,cleared:false};
+  localStorage.setItem('osDaily',JSON.stringify(dailySave));
 }
-var todayChallenge = DAILIES[dailySave.idx];
+var todayChallenge=DAILIES[dailySave.idx];
+var todayTries=parseInt(localStorage.getItem('osTodayTries')||'0');
+if(localStorage.getItem('osTodayKey')!==todayKey){todayTries=0;localStorage.setItem('osTodayKey',todayKey);localStorage.setItem('osTodayTries','0');}
+var streak=parseInt(localStorage.getItem('osStreak')||'0');
+var lastPlayDate=localStorage.getItem('osLastPlay')||'';
+var yesterday=(function(){var d=new Date();d.setDate(d.getDate()-1);return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();})();
+if(lastPlayDate!==todayKey&&lastPlayDate!==yesterday)streak=0;
 
-// 오늘 판수
-var todayTries = parseInt(localStorage.getItem('osTodayTries') || '0');
-var todayKey2  = localStorage.getItem('osTodayKey') || '';
-if (todayKey2 !== todayKey) {
-  todayTries = 0;
-  localStorage.setItem('osTodayKey', todayKey);
-  localStorage.setItem('osTodayTries', '0');
-}
+// DOM
+var counterEl   =document.getElementById('counter');
+var tapBtn      =document.getElementById('tap-btn');
+var ringFill    =document.getElementById('ring-fill');
+var resultTime  =document.getElementById('result-time');
+var resultDiff  =document.getElementById('result-diff');
+var resultGrade =document.getElementById('result-grade');
+var shareBtn    =document.getElementById('share-btn');
+var overlayEl   =document.getElementById('overlay');
+var startBtn2   =document.getElementById('start-btn');
+var soccerEl    =document.getElementById('soccer-wrap');
+var CIRC=2*Math.PI*97;
+ringFill.style.strokeDasharray=CIRC;
+ringFill.style.strokeDashoffset=CIRC;
 
-// 연속 도전 (오늘 n번 이상 하면 streak)
-var streak = parseInt(localStorage.getItem('osStreak') || '0');
-var lastPlayDate = localStorage.getItem('osLastPlay') || '';
-var yesterday = (function(){
-  var d = new Date(); d.setDate(d.getDate()-1);
-  return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
-})();
-if (lastPlayDate !== todayKey && lastPlayDate !== yesterday) streak = 0;
-
-// ── DOM ──
-var counterEl    = document.getElementById('counter');
-var tapBtn       = document.getElementById('tap-btn');
-var ringFill     = document.getElementById('ring-fill');
-var resultTime   = document.getElementById('result-time');
-var resultDiff   = document.getElementById('result-diff');
-var resultGrade  = document.getElementById('result-grade');
-var shareBtn     = document.getElementById('share-btn');
-var overlay      = document.getElementById('overlay');
-var startBtn2    = document.getElementById('start-btn');
-
-var CIRC = 2 * Math.PI * 97; // ~610
-ringFill.style.strokeDasharray = CIRC;
-ringFill.style.strokeDashoffset = CIRC;
-
-function saveStats() {
-  localStorage.setItem('osBestDiff',  ST.bestDiff);
-  localStorage.setItem('osTries',     ST.totalTries);
-  localStorage.setItem('osPerfect',   ST.totalPerfect);
-  localStorage.setItem('osDiffs',     JSON.stringify(ST.allDiffs.slice(-100)));
-  localStorage.setItem('osDailyClr',  ST.dailyCleared);
-  localStorage.setItem('osDaily',     JSON.stringify(dailySave));
+function saveStats(){
+  localStorage.setItem('osBestDiff', ST.bestDiff);
+  localStorage.setItem('osTries',    ST.totalTries);
+  localStorage.setItem('osPerfect',  ST.totalPerfect);
+  localStorage.setItem('osDiffs',    JSON.stringify(ST.allDiffs.slice(-100)));
+  localStorage.setItem('osDailyClr', ST.dailyCleared);
+  localStorage.setItem('osDaily',    JSON.stringify(dailySave));
   localStorage.setItem('osTodayTries',todayTries);
-  localStorage.setItem('osStreak',    streak);
-  localStorage.setItem('osLastPlay',  todayKey);
+  localStorage.setItem('osStreak',   streak);
+  localStorage.setItem('osLastPlay', todayKey);
 }
-
-function updateHUD() {
-  document.getElementById('best-disp').textContent =
-    ST.bestDiff < 9999 ? ST.bestDiff.toFixed(3)+'s' : '—';
-  document.getElementById('today-disp').textContent = todayTries + '판';
-  document.getElementById('streak-disp').textContent = '🔥' + streak;
-  document.getElementById('stat-tries').textContent = ST.totalTries;
-  document.getElementById('stat-perfect').textContent = ST.totalPerfect;
-  if (ST.allDiffs.length > 0) {
-    var avg = ST.allDiffs.slice(-20).reduce(function(a,b){return a+b;},0) / Math.min(ST.allDiffs.length,20);
-    document.getElementById('stat-avg').textContent = avg.toFixed(3)+'s';
+function updateHUD(){
+  document.getElementById('best-disp').textContent=ST.bestDiff<9999?ST.bestDiff.toFixed(3)+'s':'—';
+  document.getElementById('today-disp').textContent=todayTries+'판';
+  document.getElementById('streak-disp').textContent=streak;
+  document.getElementById('stat-tries').textContent=ST.totalTries;
+  document.getElementById('stat-perfect').textContent=ST.totalPerfect;
+  if(ST.allDiffs.length>0){
+    var avg=ST.allDiffs.slice(-20).reduce(function(a,b){return a+b;},0)/Math.min(ST.allDiffs.length,20);
+    document.getElementById('stat-avg').textContent=avg.toFixed(3)+'s';
   }
 }
-
-function renderDaily() {
-  var ch = todayChallenge;
-  document.getElementById('daily-desc').textContent = ch.desc;
-  var pct = 0, statusText = '';
-  if (dailySave.cleared) {
-    pct = 100;
-    statusText = '✅ 클리어!';
-    document.getElementById('daily-bar').style.background = '#0f9';
-  } else {
-    var prog = dailySave.progress || 0;
-    pct = Math.min(Math.round(prog / ch.goal * 100), 99);
-    statusText = prog + ' / ' + ch.goal;
-    document.getElementById('daily-bar').style.background = 'linear-gradient(135deg,#f84,#f4a)';
-  }
-  document.getElementById('daily-bar').style.width = pct + '%';
-  document.getElementById('daily-status').textContent = statusText;
-  document.getElementById('daily-status').style.color = dailySave.cleared ? '#0f9' : '#fa4';
+function renderDaily(){
+  var ch=todayChallenge;
+  document.getElementById('daily-desc').textContent=ch.desc;
+  var pct=dailySave.cleared?100:Math.min(Math.round((dailySave.progress||0)/ch.goal*100),99);
+  document.getElementById('daily-bar').style.width=pct+'%';
+  document.getElementById('daily-bar').style.background=dailySave.cleared?'#0f9':'linear-gradient(135deg,#ff6b35,#ff4081)';
+  document.getElementById('daily-status').textContent=dailySave.cleared?'클리어!':(dailySave.progress||0)+'/'+ch.goal;
+  document.getElementById('daily-status').style.color=dailySave.cleared?'#0f9':'#fa4';
 }
 
 // ── 오디오 ──
-var audioCtx = null;
-var tensionOsc = null, tensionGain = null;
-var tensionLfoOsc = null, tensionLfoGain = null;
-var isTensionPlaying = false;
-
-function getAC() {
-  if (!audioCtx) try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){}
-  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+var audioCtx=null;
+var tensionOsc=null,tensionGain=null,tensionLfoOsc=null,tensionLfoGain=null;
+var isTensionPlaying=false;
+function getAC(){
+  if(!audioCtx)try{audioCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}
+  if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();
   return audioCtx;
 }
-
-function stopTension() {
-  try { if (tensionOsc)    { tensionOsc.stop();    tensionOsc    = null; } } catch(e) {}
-  try { if (tensionLfoOsc) { tensionLfoOsc.stop(); tensionLfoOsc = null; } } catch(e) {}
-  tensionGain = null; tensionLfoGain = null;
-  isTensionPlaying = false;
+function stopTension(){
+  try{if(tensionOsc){tensionOsc.stop();tensionOsc=null;}}catch(e){}
+  try{if(tensionLfoOsc){tensionLfoOsc.stop();tensionLfoOsc=null;}}catch(e){}
+  tensionGain=null;tensionLfoGain=null;isTensionPlaying=false;
 }
-
-function playStart() {
-  var ac = getAC(); if (!ac) return;
+function playStart(){
+  var ac=getAC();if(!ac)return;
   stopTension();
-  try {
-    var t = ac.currentTime;
-    // 시작 틱
-    var o0 = ac.createOscillator(), g0 = ac.createGain();
-    o0.connect(g0); g0.connect(ac.destination);
-    o0.type = 'sine'; o0.frequency.value = 440;
-    g0.gain.setValueAtTime(0.2, t);
-    g0.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
-    o0.start(t); o0.stop(t + 0.09);
-
-    // 메인 긴장감 오실레이터
-    tensionOsc  = ac.createOscillator();
-    tensionGain = ac.createGain();
-    // LFO (진동 떨림)
-    tensionLfoOsc  = ac.createOscillator();
-    tensionLfoGain = ac.createGain();
-    tensionLfoOsc.type = 'sine';
-    tensionLfoOsc.frequency.value = 4;
-    tensionLfoGain.gain.value = 3;
-    tensionLfoOsc.connect(tensionLfoGain);
-    tensionLfoGain.connect(tensionOsc.frequency);
-
-    tensionOsc.type = 'sine';
-    tensionOsc.frequency.value = 180;
+  try{
+    var t=ac.currentTime;
+    var o0=ac.createOscillator(),g0=ac.createGain();
+    o0.connect(g0);g0.connect(ac.destination);
+    o0.type='sine';o0.frequency.value=440;
+    g0.gain.setValueAtTime(0.2,t);g0.gain.exponentialRampToValueAtTime(0.001,t+0.08);
+    o0.start(t);o0.stop(t+0.09);
+    tensionOsc=ac.createOscillator();tensionGain=ac.createGain();
+    tensionLfoOsc=ac.createOscillator();tensionLfoGain=ac.createGain();
+    tensionLfoOsc.type='sine';tensionLfoOsc.frequency.value=4;
+    tensionLfoGain.gain.value=3;
+    tensionLfoOsc.connect(tensionLfoGain);tensionLfoGain.connect(tensionOsc.frequency);
+    tensionOsc.type='sine';tensionOsc.frequency.value=180;
     tensionOsc.connect(tensionGain);
-    tensionGain.gain.setValueAtTime(0.0, t);
-    tensionGain.gain.linearRampToValueAtTime(0.07, t + 0.2);
+    tensionGain.gain.setValueAtTime(0.0,t);tensionGain.gain.linearRampToValueAtTime(0.07,t+0.2);
     tensionGain.connect(ac.destination);
-
-    tensionOsc.start(t);
-    tensionLfoOsc.start(t);
-    isTensionPlaying = true;
-  } catch(e) {}
+    tensionOsc.start(t);tensionLfoOsc.start(t);
+    isTensionPlaying=true;
+  }catch(e){}
 }
-
-function updateTension(elapsed) {
-  if (!isTensionPlaying || !tensionOsc || !tensionGain || !tensionLfoOsc || !tensionLfoGain) return;
-  var ac = getAC(); if (!ac) return;
-  try {
-    var t = ac.currentTime;
-    if (elapsed <= 1.0) {
-      // 0→1초: 음 상승 180→880Hz, 볼륨 증가, 떨림 가속
-      var p = elapsed / 1.0;
-      tensionOsc.frequency.setTargetAtTime(180 + 700 * Math.pow(p, 1.6), t, 0.04);
-      tensionGain.gain.setTargetAtTime(0.06 + 0.18 * p, t, 0.04);
-      tensionLfoOsc.frequency.setTargetAtTime(4 + 14 * p, t, 0.04);
-      tensionLfoGain.gain.setTargetAtTime(3 + 25 * p, t, 0.04);
-    } else {
-      // 1초 초과: 빠르게 식어감
-      var over = Math.min(elapsed - 1.0, 0.8);
-      var decay = 1 - over / 0.8;
-      tensionOsc.frequency.setTargetAtTime(880 * decay + 120, t, 0.06);
-      tensionGain.gain.setTargetAtTime(0.24 * Math.max(0, decay), t, 0.06);
-      tensionLfoOsc.frequency.setTargetAtTime(18 * decay + 2, t, 0.06);
-      tensionLfoGain.gain.setTargetAtTime(28 * decay + 1, t, 0.06);
+function updateTension(elapsed){
+  if(!isTensionPlaying||!tensionOsc||!tensionGain||!tensionLfoOsc||!tensionLfoGain)return;
+  var ac=getAC();if(!ac)return;
+  try{
+    var t=ac.currentTime;
+    if(elapsed<=1.0){
+      var p=elapsed/1.0;
+      tensionOsc.frequency.setTargetAtTime(180+700*Math.pow(p,1.6),t,0.04);
+      tensionGain.gain.setTargetAtTime(0.06+0.18*p,t,0.04);
+      tensionLfoOsc.frequency.setTargetAtTime(4+14*p,t,0.04);
+      tensionLfoGain.gain.setTargetAtTime(3+25*p,t,0.04);
+    }else{
+      var over=Math.min(elapsed-1.0,0.8);var decay=1-over/0.8;
+      tensionOsc.frequency.setTargetAtTime(880*decay+120,t,0.06);
+      tensionGain.gain.setTargetAtTime(0.24*Math.max(0,decay),t,0.06);
+      tensionLfoOsc.frequency.setTargetAtTime(18*decay+2,t,0.06);
+      tensionLfoGain.gain.setTargetAtTime(28*decay+1,t,0.06);
     }
-  } catch(e) {}
+  }catch(e){}
 }
-
-function playStop(grade) {
+function playStop(grade){
   stopTension();
-  var ac = getAC(); if (!ac) return;
-  try {
-    var t = ac.currentTime;
-    if (grade === 0) {
-      // 신의 손: 5음 상승 팡파레
-      [523, 659, 784, 1047, 1319].forEach(function(f, i) {
-        var o = ac.createOscillator(), g = ac.createGain();
-        o.connect(g); g.connect(ac.destination);
-        o.type = 'sine';
-        o.frequency.value = f;
-        g.gain.setValueAtTime(0.22, t + i*0.055);
-        g.gain.exponentialRampToValueAtTime(0.001, t + i*0.055 + 0.5);
-        o.start(t + i*0.055); o.stop(t + i*0.055 + 0.55);
+  var ac=getAC();if(!ac)return;
+  try{
+    var t=ac.currentTime;
+    if(grade===0){
+      [523,659,784,1047,1319].forEach(function(f,i){
+        var o=ac.createOscillator(),g=ac.createGain();
+        o.connect(g);g.connect(ac.destination);o.type='sine';o.frequency.value=f;
+        g.gain.setValueAtTime(0.22,t+i*0.055);g.gain.exponentialRampToValueAtTime(0.001,t+i*0.055+0.5);
+        o.start(t+i*0.055);o.stop(t+i*0.055+0.55);
       });
-    } else if (grade === 1) {
-      // 달인: 밝은 두 음
-      [659, 880].forEach(function(f, i) {
-        var o = ac.createOscillator(), g = ac.createGain();
-        o.connect(g); g.connect(ac.destination);
-        o.type = 'sine'; o.frequency.value = f;
-        g.gain.setValueAtTime(0.2, t + i*0.09);
-        g.gain.exponentialRampToValueAtTime(0.001, t + i*0.09 + 0.35);
-        o.start(t + i*0.09); o.stop(t + i*0.09 + 0.38);
+    }else if(grade===1){
+      [659,880].forEach(function(f,i){
+        var o=ac.createOscillator(),g=ac.createGain();
+        o.connect(g);g.connect(ac.destination);o.type='sine';o.frequency.value=f;
+        g.gain.setValueAtTime(0.2,t+i*0.09);g.gain.exponentialRampToValueAtTime(0.001,t+i*0.09+0.35);
+        o.start(t+i*0.09);o.stop(t+i*0.09+0.38);
       });
-    } else if (grade === 2) {
-      // 고수: 맑은 단음
-      var o = ac.createOscillator(), g = ac.createGain();
-      o.connect(g); g.connect(ac.destination);
-      o.type = 'triangle'; o.frequency.value = 528;
-      g.gain.setValueAtTime(0.18, t);
-      g.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
-      o.start(t); o.stop(t + 0.32);
-    } else if (grade <= 4) {
-      // 보통/아쉽다: 낮은 단음
-      var o = ac.createOscillator(), g = ac.createGain();
-      o.connect(g); g.connect(ac.destination);
-      o.type = 'triangle'; o.frequency.value = 330;
-      g.gain.setValueAtTime(0.14, t);
-      g.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
-      o.start(t); o.stop(t + 0.27);
-    } else {
-      // 다시하자: 하강 실망음
-      var o = ac.createOscillator(), g = ac.createGain();
-      o.connect(g); g.connect(ac.destination);
-      o.type = 'sawtooth';
-      o.frequency.setValueAtTime(220, t);
-      o.frequency.exponentialRampToValueAtTime(110, t + 0.3);
-      g.gain.setValueAtTime(0.12, t);
-      g.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
-      o.start(t); o.stop(t + 0.32);
+    }else if(grade===2){
+      var o=ac.createOscillator(),g=ac.createGain();o.connect(g);g.connect(ac.destination);
+      o.type='triangle';o.frequency.value=528;
+      g.gain.setValueAtTime(0.18,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.3);o.start(t);o.stop(t+0.32);
+    }else if(grade<=4){
+      var o=ac.createOscillator(),g=ac.createGain();o.connect(g);g.connect(ac.destination);
+      o.type='triangle';o.frequency.value=330;
+      g.gain.setValueAtTime(0.14,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.25);o.start(t);o.stop(t+0.27);
+    }else{
+      var o=ac.createOscillator(),g=ac.createGain();o.connect(g);g.connect(ac.destination);
+      o.type='sawtooth';o.frequency.setValueAtTime(220,t);o.frequency.exponentialRampToValueAtTime(110,t+0.3);
+      g.gain.setValueAtTime(0.12,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.3);o.start(t);o.stop(t+0.32);
     }
-  } catch(e) {}
+  }catch(e){}
+}
+
+// ── 축구공 애니메이션 ──
+// 탭버튼 200px, SVG 30px → 1초에 딱 맞으려면 scale=6.667
+var FULL_SCALE = 200/30;
+var burstParticles = [];
+
+function startSoccerAnim(){
+  soccerEl.style.transition = 'none';
+  soccerEl.style.opacity    = '0';
+  soccerEl.style.transform  = 'translate(-50%,-50%) scale(0.04) rotate(0deg)';
+  soccerEl.style.filter     = 'none';
+  burstParticles = [];
+}
+
+function updateSoccerAnim(elapsed){
+  if(!soccerEl) return;
+  if(elapsed < 1.0){
+    // 0→1초: 점점 커지며 천천히 회전
+    var p = elapsed / 1.0;
+    // easeInOutQuad로 부드럽게
+    var ease = p < 0.5 ? 2*p*p : -1+(4-2*p)*p;
+    var scale  = FULL_SCALE * (0.04 + 0.96 * ease);
+    var rotate = p * 300;
+    var opacity = Math.min(1, 0.2 + p * 0.9);
+    var glow   = Math.round(2 + p * 16);
+    soccerEl.style.transform = 'translate(-50%,-50%) scale('+scale.toFixed(4)+') rotate('+rotate.toFixed(1)+'deg)';
+    soccerEl.style.opacity   = opacity.toFixed(2);
+    soccerEl.style.filter    = 'drop-shadow(0 0 '+glow+'px rgba(255,200,50,'+( 0.3+p*0.6).toFixed(2)+'))';
+  } else {
+    // 1초 딱 됐을 때 → 뻥 터짐!
+    var over  = elapsed - 1.0;
+    var burst = Math.min(over / 0.45, 1); // 0.45초 안에 터짐 완료
+    // 공이 빠르게 확장
+    var scale2  = FULL_SCALE * (1 + burst * 3.5);
+    var rotate2 = 300 + burst * 200;
+    // 투명도는 빠르게 사라짐
+    var opacity2 = Math.max(0, 1 - burst * 1.6);
+    soccerEl.style.transform = 'translate(-50%,-50%) scale('+scale2.toFixed(4)+') rotate('+rotate2.toFixed(1)+'deg)';
+    soccerEl.style.opacity   = opacity2.toFixed(2);
+    // 터질 때 강한 오렌지 글로우
+    var glowSize = Math.round(20 + burst * 50);
+    var glowAlpha = (1 - burst * 0.8).toFixed(2);
+    soccerEl.style.filter = 'drop-shadow(0 0 '+glowSize+'px rgba(255,120,0,'+glowAlpha+'))';
+  }
+}
+
+function stopSoccerAnim(){
+  soccerEl.style.transition = 'opacity 0.15s';
+  soccerEl.style.opacity    = '0';
+  setTimeout(function(){
+    soccerEl.style.transition = 'none';
+    soccerEl.style.transform  = 'translate(-50%,-50%) scale(0.04) rotate(0deg)';
+    soccerEl.style.filter     = 'none';
+  }, 200);
 }
 
 // ── 타이머 루프 ──
-function timerLoop() {
-  if (!pressing) return;
-  var elapsed = (performance.now() - startTime) / 1000;
-  counterEl.textContent = Math.min(elapsed, 9.999).toFixed(3);
-
-  // 링 업데이트 (0~2초 기준)
-  var ratio = Math.min(elapsed / 2.0, 1);
-  ringFill.style.strokeDashoffset = CIRC * (1 - ratio);
-
-  // 색상: 0.8~1.2초 구간 강조
-  var proximity = 1 - Math.abs(elapsed - TARGET);
-  if (elapsed >= 0.9 && elapsed <= 1.1) {
-    var intensity = 1 - Math.abs(elapsed - TARGET) / 0.1;
-    ringFill.style.stroke = 'rgba(255,' + Math.round(200 + intensity*55) + ',50,' + (0.6 + intensity*0.4) + ')';
-    counterEl.style.color = elapsed >= 0.97 && elapsed <= 1.03 ? '#ffd700' : '#fff';
-  } else if (elapsed < 0.9) {
-    ringFill.style.stroke = 'rgba(80,160,255,0.7)';
-    counterEl.style.color = '#fff';
-  } else {
-    ringFill.style.stroke = 'rgba(255,80,80,0.8)';
-    counterEl.style.color = '#ff8080';
+function timerLoop(ts){
+  if(tapState!=='running')return;
+  var elapsed=(performance.now()-startTime)/1000;
+  counterEl.textContent=Math.min(elapsed,9.999).toFixed(3);
+  var ratio=Math.min(elapsed/2.0,1);
+  ringFill.style.strokeDashoffset=CIRC*(1-ratio);
+  if(elapsed>=0.9&&elapsed<=1.1){
+    ringFill.style.stroke='rgba(255,'+(Math.round(200+Math.max(0,1-Math.abs(elapsed-TARGET)/0.1)*55))+',50,0.9)';
+    counterEl.style.color=elapsed>=0.97&&elapsed<=1.03?'#ffd700':'#fff';
+  }else if(elapsed<0.9){
+    ringFill.style.stroke='rgba(80,160,255,0.7)';counterEl.style.color='#fff';
+  }else{
+    ringFill.style.stroke='rgba(255,80,80,0.8)';counterEl.style.color='#ff8080';
   }
-
-  // 긴장감 사운드 업데이트
   updateTension(elapsed);
-
-  // 2초 넘으면 자동 종료
-  if (elapsed > 2.5) {
-    stopTimer();
-    return;
-  }
-
-  rafId = requestAnimationFrame(timerLoop);
+  updateSoccerAnim(elapsed);
+  if(elapsed>2.5){stopTimer();return;}
+  rafId=requestAnimationFrame(timerLoop);
 }
 
-function startTimer() {
-  pressing = true;
-  tapState = 'running';
-  startTime = performance.now();
-  counterEl.className = 'running';
-  tapBtn.className = 'running-state';
-  tapBtn.classList.add('active');
-  setTimeout(function(){ tapBtn.classList.remove('active'); }, 80);
-  ringFill.style.strokeDashoffset = CIRC;
-  resultTime.style.opacity = '0';
-  resultDiff.style.opacity = '0';
-  resultGrade.style.opacity = '0';
-  shareBtn.style.display = 'none';
-  document.getElementById('tap-btn-text').textContent = '✋';
-  document.getElementById('tap-btn-sub').textContent = '지금 다시 탭하세요!';
+function startTimer(){
+  tapState='running';
+  startTime=performance.now();
+  counterEl.className='running';
+  tapBtn.className='running-state';
+  ringFill.style.strokeDashoffset=CIRC;
+  resultTime.style.opacity='0';
+  resultDiff.style.opacity='0';
+  resultGrade.style.opacity='0';
+  shareBtn.style.display='none';
+  document.getElementById('tap-btn-text').textContent='TAP';
+  document.getElementById('tap-btn-sub').textContent='지금 다시 탭!';
   playStart();
-  rafId = requestAnimationFrame(timerLoop);
+  startSoccerAnim();
+  rafId=requestAnimationFrame(timerLoop);
 }
 
-function stopTimer() {
-  if (tapState !== 'running') return;
-  pressing = false;
-  tapState = 'idle';
+function stopTimer(){
+  if(tapState!=='running')return;
+  tapState='idle';
   cancelAnimationFrame(rafId);
   stopTension();
-
-  var elapsed = (performance.now() - startTime) / 1000;
-  var diff = Math.abs(elapsed - TARGET);
-
-  // 등급 결정
-  var gradeIdx = GRADES.length - 1;
-  for (var i = 0; i < GRADES.length; i++) {
-    if (diff <= GRADES[i].max) { gradeIdx = i; break; }
-  }
-  var grade = GRADES[gradeIdx];
-
-  // 결과 표시
-  counterEl.textContent = elapsed.toFixed(3);
-  counterEl.style.color = grade.color;
-
-  var sign = elapsed >= TARGET ? '+' : '-';
-  resultTime.textContent = elapsed.toFixed(3) + '초';
-  resultTime.style.color = grade.color;
-  resultDiff.textContent = '오차 ' + sign + diff.toFixed(3) + '초';
-  resultGrade.textContent = grade.label;
-  resultGrade.style.color = grade.color;
-  resultGrade.style.background = grade.bg;
-
-  resultTime.style.opacity = '1';
-  resultTime.classList.remove('pop-in'); void resultTime.offsetWidth; resultTime.classList.add('pop-in');
-  resultDiff.style.opacity = '1';
-  resultGrade.style.opacity = '1';
-
-  // 버튼 복원
-  tapBtn.className = 'ready-state';
-  document.getElementById('tap-btn-text').textContent = 'TAP';
-  document.getElementById('tap-btn-sub').textContent = '터치해서 시작!';
-  counterEl.className = 'ready';
-
-  // 통계 업데이트
-  ST.totalTries++;
-  todayTries++;
-  ST.allDiffs.push(diff);
-  if (gradeIdx === 0) ST.totalPerfect++;
-  if (diff < ST.bestDiff) ST.bestDiff = diff;
-
-  // 연속 기록
-  if (lastPlayDate !== todayKey) {
-    streak = lastPlayDate === yesterday ? streak + 1 : 1;
-  }
-  lastResult = { elapsed, diff, gradeIdx, grade };
-
-  // 데일리 챌린지 업데이트
-  updateDaily(gradeIdx, diff);
-
+  // 공은 유지 (결과 화면에서 보여줌)
+  var elapsed=(performance.now()-startTime)/1000;
+  var diff=Math.abs(elapsed-TARGET);
+  var gradeIdx=GRADES.length-1;
+  for(var i=0;i<GRADES.length;i++){if(diff<=GRADES[i].max){gradeIdx=i;break;}}
+  var grade=GRADES[gradeIdx];
+  counterEl.textContent=elapsed.toFixed(3);counterEl.style.color=grade.color;
+  var sign=elapsed>=TARGET?'+':'-';
+  resultTime.textContent=elapsed.toFixed(3)+'초';resultTime.style.color=grade.color;
+  resultDiff.textContent='오차 '+sign+diff.toFixed(3)+'초';
+  resultGrade.textContent=grade.label;resultGrade.style.color=grade.color;resultGrade.style.background=grade.bg;
+  resultTime.style.opacity='1';resultTime.classList.remove('pop-in');void resultTime.offsetWidth;resultTime.classList.add('pop-in');
+  resultDiff.style.opacity='1';resultGrade.style.opacity='1';
+  tapBtn.className='';counterEl.className='ready';
+  document.getElementById('tap-btn-text').textContent='TAP';
+  document.getElementById('tap-btn-sub').textContent='터치해서 시작!';
+  ST.totalTries++;todayTries++;ST.allDiffs.push(diff);
+  if(gradeIdx===0)ST.totalPerfect++;
+  if(diff<ST.bestDiff)ST.bestDiff=diff;
+  if(lastPlayDate!==todayKey){streak=lastPlayDate===yesterday?streak+1:1;}
+  lastResult={elapsed,diff,gradeIdx,grade};
+  updateDaily(gradeIdx,diff);
   playStop(gradeIdx);
-  saveStats();
-  updateHUD();
-  shareBtn.style.display = 'block';
+  saveStats();updateHUD();
+  shareBtn.style.display='block';
 }
 
-function updateDaily(gradeIdx, diff) {
-  if (dailySave.cleared) return;
-  var ch = todayChallenge;
-  var prev = dailySave.progress || 0;
-  var next = prev;
-
-  if (ch.key === 'perfect')  next = gradeIdx === 0 ? prev + 1 : prev;
-  if (ch.key === 'perfect3') next = gradeIdx === 0 ? prev + 1 : prev;
-  if (ch.key === 'master')   next = gradeIdx <= 1  ? prev + 1 : prev;
-  if (ch.key === 'good5')    next = gradeIdx <= 2  ? prev + 1 : prev;
-  if (ch.key === 'tries10')  next = prev + 1;
-  if (ch.key === 'tries20')  next = prev + 1;
-  if (ch.key === 'avg50') {
-    if (ST.allDiffs.length >= 5) {
-      var recent = ST.allDiffs.slice(-5);
-      var avg = recent.reduce(function(a,b){return a+b;},0)/recent.length;
-      next = avg <= 0.05 ? 1 : 0;
-    }
+function updateDaily(gradeIdx,diff){
+  if(dailySave.cleared)return;
+  var ch=todayChallenge;var prev=dailySave.progress||0;var next=prev;
+  if(ch.key==='perfect')  next=gradeIdx===0?prev+1:prev;
+  if(ch.key==='perfect3') next=gradeIdx===0?prev+1:prev;
+  if(ch.key==='master')   next=gradeIdx<=1?prev+1:prev;
+  if(ch.key==='good5')    next=gradeIdx<=2?prev+1:prev;
+  if(ch.key==='tries10'||ch.key==='tries20') next=prev+1;
+  if(ch.key==='avg50'){
+    if(ST.allDiffs.length>=5){var r=ST.allDiffs.slice(-5);var a=r.reduce(function(x,y){return x+y;},0)/r.length;next=a<=0.05?1:0;}
   }
-
-  dailySave.progress = next;
-  if (next >= ch.goal && !dailySave.cleared) {
-    dailySave.cleared = true;
-    ST.dailyCleared++;
-    showToast('🎉 오늘의 챌린지 클리어! +보너스');
-  }
+  dailySave.progress=next;
+  if(next>=ch.goal&&!dailySave.cleared){dailySave.cleared=true;ST.dailyCleared++;showToast('오늘의 챌린지 클리어!');}
   renderDaily();
 }
 
-// ── 공유 ──
-function doShare() {
-  if (!lastResult) return;
-  var r = lastResult;
-  var sign = r.elapsed >= TARGET ? '+' : '-';
-  var rankPct = calcRankPct(r.diff);
-  var text = [
-    '⏱️ 1초의 사나이',
-    '',
-    '나의 기록: ' + r.elapsed.toFixed(3) + '초',
-    '오차: ' + sign + r.diff.toFixed(3) + '초',
-    r.grade.label,
-    '전국 상위 ' + rankPct + '%',
-    '',
-    '도전해봐! → https://mindweaver74.github.io/one-second',
-    '#1초를눌러라 #반응속도테스트'
-  ].join('\n');
-
-  if (navigator.share) {
-    navigator.share({ title: '1초를 눌러라!', text: text })
-      .catch(function(){});
-  } else {
-    // 클립보드 복사
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(text).then(function(){
-        showToast('📋 클립보드에 복사됐어요!');
-      });
-    } else {
-      // 구형 방식
-      var ta = document.createElement('textarea');
-      ta.value = text;
-      document.body.appendChild(ta);
-      ta.select(); document.execCommand('copy');
-      document.body.removeChild(ta);
-      showToast('📋 클립보드에 복사됐어요!');
-    }
-  }
+function doShare(){
+  if(!lastResult)return;
+  var r=lastResult;var sign=r.elapsed>=TARGET?'+':'-';
+  var pcts=[1,5,15,35,60,85];var rankPct=pcts[r.gradeIdx]||85;
+  var text='1초를 눌러라!\n\n나의 기록: '+r.elapsed.toFixed(3)+'초\n오차: '+sign+r.diff.toFixed(3)+'초\n'+r.grade.label+'\n전국 상위 '+rankPct+'%\n\nhttps://mindweaver74.github.io/One-Second\n#1초를눌러라 #반응속도테스트';
+  if(navigator.share){navigator.share({title:'1초를 눌러라!',text:text}).catch(function(){});}
+  else if(navigator.clipboard){navigator.clipboard.writeText(text).then(function(){showToast('클립보드에 복사됐어요!');});}
+  else{var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast('클립보드에 복사됐어요!');}
 }
 
-function calcRankPct(diff) {
-  // 오차에 따른 대략적 상위 % 계산 (게임 내 추정)
-  if (diff <= 0.010) return 1;
-  if (diff <= 0.030) return 5;
-  if (diff <= 0.060) return 15;
-  if (diff <= 0.100) return 35;
-  if (diff <= 0.200) return 60;
-  return 85;
+var toastTimer=null;
+function showToast(msg){
+  var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');
+  clearTimeout(toastTimer);toastTimer=setTimeout(function(){el.classList.remove('show');},2500);
 }
 
-// ── 토스트 ──
-var toastTimer = null;
-function showToast(msg) {
-  var el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(function(){ el.classList.remove('show'); }, 2500);
+function addEL(el,ev,fn,opts){if(el)el.addEventListener(ev,fn,opts||false);}
+
+// 탭 버튼
+function handleTap(e){
+  if(e.preventDefault)e.preventDefault();if(e.stopPropagation)e.stopPropagation();
+  if(!gameActive)return;
+  if(!audioCtx)getAC();if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();
+  if(tapState==='idle')startTimer();
+  else if(tapState==='running')stopTimer();
 }
-
-// ── 이벤트 ──
-function addEL(el, ev, fn, opts) { if(el) el.addEventListener(ev, fn, opts||false); }
-
-// 탭 버튼 - touchstart 하나로 통일 (누르기/떼기 방식 제거)
-// 첫 탭: 타이머 시작 / 두 번째 탭: 타이머 정지
-function handleTap(e) {
-  if (e.preventDefault) e.preventDefault();
-  if (e.stopPropagation) e.stopPropagation();
-  if (!gameActive) return;
-  // iOS AudioContext 깨우기
-  if (!audioCtx) getAC();
-  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-
-  if (tapState === 'idle') {
-    startTimer();
-  } else if (tapState === 'running') {
-    stopTimer();
-  }
-}
-
-addEL(tapBtn, 'touchstart', handleTap, {passive: false});
-addEL(tapBtn, 'mousedown',  handleTap, false);
+addEL(tapBtn,'touchstart',handleTap,{passive:false});
+addEL(tapBtn,'mousedown', handleTap,false);
 
 // 공유 버튼
-var shareTouched = false;
-addEL(shareBtn, 'touchstart', function(e){ e.preventDefault(); e.stopPropagation(); }, false);
-addEL(shareBtn, 'touchend', function(e){
-  e.preventDefault(); e.stopPropagation();
-  shareTouched = true; doShare();
-  setTimeout(function(){ shareTouched = false; }, 600);
-}, false);
-addEL(shareBtn, 'click', function(){ if(shareTouched) return; doShare(); }, false);
+var shareTouched=false;
+addEL(shareBtn,'touchstart',function(e){e.preventDefault();e.stopPropagation();},false);
+addEL(shareBtn,'touchend',function(e){e.preventDefault();e.stopPropagation();shareTouched=true;doShare();setTimeout(function(){shareTouched=false;},600);},false);
+addEL(shareBtn,'click',function(){if(shareTouched)return;doShare();},false);
 
 // 시작 버튼
-var startTouched = false;
-addEL(startBtn2, 'touchstart', function(e){ e.preventDefault(); e.stopPropagation(); }, false);
-addEL(startBtn2, 'touchend', function(e){
-  e.preventDefault(); e.stopPropagation();
-  startTouched = true; beginGame();
-  setTimeout(function(){ startTouched = false; }, 600);
-}, false);
-addEL(startBtn2, 'click', function(){ if(startTouched) return; beginGame(); }, false);
+var startTouched=false;
+addEL(startBtn2,'touchstart',function(e){e.preventDefault();e.stopPropagation();},false);
+addEL(startBtn2,'touchend',function(e){e.preventDefault();e.stopPropagation();startTouched=true;beginGame();setTimeout(function(){startTouched=false;},600);},false);
+addEL(startBtn2,'click',function(){if(startTouched)return;beginGame();},false);
 
-function beginGame() {
-  // iOS: 시작 버튼 터치에서 AudioContext 생성/resume
-  if (!audioCtx) {
-    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
-  }
-  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-  overlay.style.display = 'none';
-  gameActive = true;
-  updateHUD();
-  renderDaily();
+function beginGame(){
+  if(!audioCtx)try{audioCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}
+  if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();
+  overlayEl.style.display='none';gameActive=true;updateHUD();renderDaily();
 }
 
-// ── 초기화 ──
-updateHUD();
-renderDaily();
+updateHUD();renderDaily();
 </script>
 </body>
 </html>
